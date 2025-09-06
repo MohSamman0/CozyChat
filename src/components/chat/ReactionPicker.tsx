@@ -92,7 +92,7 @@ export const ReactionPicker = ({
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [showPicker, disabled]);
+  }, [showPicker, disabled, handleReaction]);
 
   return (
     <div className="relative">

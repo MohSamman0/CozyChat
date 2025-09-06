@@ -230,7 +230,7 @@ export default function ChatPage() {
     };
 
     createSession();
-  }, [currentUser, initializingUser, dispatch]);
+  }, [currentUser, initializingUser, dispatch, currentSession]);
 
   const handleSendMessage = async () => {
     if (!message.trim() || !isConnected || !sendMessage || isSending) return;
@@ -531,7 +531,7 @@ export default function ChatPage() {
           {currentSession?.status === 'active' && messages.length === 0 && (
             <div className="cozy-system-message">
               <div className="cozy-system-pill connected">
-                ✨ You're connected—say hi!
+                ✨ You&apos;re connected—say hi!
               </div>
             </div>
           )}

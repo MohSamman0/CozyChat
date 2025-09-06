@@ -333,7 +333,7 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
       console.log('🔌 useRealtimeChat cleanup, disconnecting...');
       disconnect();
     };
-  }, [sessionId, userId]); // Removed connect and disconnect from deps to prevent infinite loop
+  }, [sessionId, userId, connect, disconnect]); // Added connect and disconnect to deps
 
   return {
     connect,
