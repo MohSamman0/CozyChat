@@ -322,18 +322,26 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
   useEffect(() => {
     console.log('🔗 useRealtimeChat useEffect triggered:', { sessionId, userId });
     
-    if (sessionId && userId) {
+    // Only attempt connection if both sessionId and userId are valid strings
+    if (sessionId && userId && typeof sessionId === 'string' && typeof userId === 'string') {
       console.log('✅ Both sessionId and userId available, attempting connection...');
       connect(sessionId, userId);
     } else {
-      console.log('❌ Missing sessionId or userId:', { sessionId: !!sessionId, userId: !!userId });
+      console.log('❌ Missing or invalid sessionId or userId:', { 
+        sessionId: !!sessionId, 
+        userId: !!userId,
+        sessionIdType: typeof sessionId,
+        userIdType: typeof userId
+      });
+      // Don't attempt connection if we don't have valid IDs
+      return;
     }
 
     return () => {
       console.log('🔌 useRealtimeChat cleanup, disconnecting...');
       disconnect();
     };
-  }, [sessionId, userId, connect, disconnect]); // Added connect and disconnect back to deps
+  }, [sessionId, userId]); // Removed connect and disconnect to prevent infinite loop
 
   return {
     connect,
