@@ -34,7 +34,7 @@ export default async function handler(
     const supabase = createAdminClient();
 
     // Update user's last_seen timestamp and ensure they're marked as active
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('anonymous_users')
       .update({
         last_seen: new Date().toISOString(),
