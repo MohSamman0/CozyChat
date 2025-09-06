@@ -89,7 +89,6 @@ export default function ChatPage() {
             }),
             keepalive: true, // Ensures request completes even if page unloads
           });
-          console.log('🔒 Session cleanup completed');
         } catch (error) {
           console.error('Session cleanup failed:', error);
           // Fallback to sendBeacon if fetch fails
@@ -130,7 +129,7 @@ export default function ChatPage() {
 
     // If we have a user ID in sessionStorage but no currentUser in Redux (page refresh)
     if (existingUserId && !currentUser) {
-      console.log('🔄 Recovering user from sessionStorage after refresh:', existingUserId);
+      // Recovering user from sessionStorage after refresh
       
       // Clear any existing session state to ensure fresh start
       dispatch(clearChat());
@@ -211,7 +210,7 @@ export default function ChatPage() {
       }
 
       isCreatingSession = true;
-      console.log('🚀 Creating/joining session for user:', currentUser.id);
+      // Creating/joining session for user
       
       // Add a small random delay to prevent race conditions
       const delay = Math.random() * 2000; // 0-2 seconds
@@ -234,7 +233,7 @@ export default function ChatPage() {
 
         const data = await response.json();
         if (data.success) {
-          console.log('✅ Session created/joined:', data.session_id, data.message);
+          // Session created/joined successfully
           dispatch(setCurrentSession({
             id: data.session_id,
             user1_id: currentUser.id,
@@ -324,7 +323,7 @@ export default function ChatPage() {
         const error = await response.json();
         console.error('Failed to close session:', error);
       } else {
-        console.log('✅ Session closed successfully');
+        // Session closed successfully
       }
     } catch (error) {
       console.error('Error closing session:', error);
@@ -335,7 +334,7 @@ export default function ChatPage() {
         status: 'ended'
       }));
       
-      console.log('🔚 Chat session ended - staying on chat page');
+      // Chat session ended - staying on chat page
     }
   };
 
@@ -375,7 +374,7 @@ export default function ChatPage() {
         console.error('Failed to start new chat:', error);
       } else {
         const result = await response.json();
-        console.log('🔄 New chat started:', result);
+        // New chat started successfully
         
         // Clear current chat state but keep user
         dispatch(clearChat());

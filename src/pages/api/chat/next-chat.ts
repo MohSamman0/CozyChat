@@ -54,7 +54,7 @@ export default async function handler(
     if (closeError) {
       console.error('Error closing current session:', closeError);
     } else {
-      console.log(`🔄 Closed session ${current_session_id} for next chat`);
+      // Closed session for next chat
     }
 
     // Look for a waiting session to join (exclude previous partners)
@@ -99,7 +99,7 @@ export default async function handler(
         });
       }
 
-      console.log(`🎯 User ${user_id} joined existing session: ${targetSession.id}`);
+      // User joined existing session
       
       return res.status(200).json({
         success: true,
@@ -127,7 +127,7 @@ export default async function handler(
         });
       }
 
-      console.log(`🆕 Created new waiting session for user: ${user_id}`);
+      // Created new waiting session for user
       
       return res.status(201).json({
         success: true,

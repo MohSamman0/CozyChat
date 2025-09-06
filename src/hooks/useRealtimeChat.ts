@@ -162,20 +162,14 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
 
   // Setup realtime connection
   const connect = useCallback(async (sessionId: string, userId: string) => {
-    console.log('🚀 Starting real-time connection...', { sessionId, userId });
-    
     try {
-      console.log('📡 Setting connection status to connecting...');
       dispatch(setConnectionStatus('connecting'));
       dispatch(setLoading(true));
 
       // Initialize encryption
-      console.log('🔐 Initializing encryption for session:', sessionId);
       await initializeEncryption(sessionId);
-      console.log('✅ Encryption initialized successfully');
 
       // Create realtime channel
-      console.log('📺 Creating realtime channel for session:', sessionId);
       const channel = supabase
         .channel(`chat-session-${sessionId}`)
         .on(
@@ -197,8 +191,6 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
             filter: `id=eq.${sessionId}`,
           },
           (payload: RealtimePostgresChangesPayload<any>) => {
-            console.log('🔄 Session status changed:', (payload.old as any)?.status, '→', (payload.new as any).status);
-            
             const session: ChatSession = {
               id: payload.new.id,
               user1_id: payload.new.user1_id,
@@ -244,25 +236,17 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
 
       channelRef.current = channel;
 
-      console.log('📡 Subscribing to channel...');
       const status = await channel.subscribe((status) => {
-        console.log('📡 Channel subscription status changed:', status);
-        
         if (status === 'SUBSCRIBED') {
-          console.log('✅ Successfully subscribed to real-time channel!');
-          
-          
           dispatch(setConnectionStatus('connected'));
           dispatch(setLoading(false));
           dispatch(resetReconnectAttempts());
           startHeartbeat();
         } else if (status === 'CHANNEL_ERROR') {
-          console.log('❌ Channel subscription error');
           dispatch(setConnectionStatus('error'));
           dispatch(setConnectionError('Failed to connect to chat'));
           attemptReconnection(sessionId, userId, connect);
         } else if (status === 'TIMED_OUT') {
-          console.log('⏰ Channel subscription timed out');
           dispatch(setConnectionStatus('error'));
           dispatch(setConnectionError('Connection timed out'));
           attemptReconnection(sessionId, userId, connect);
@@ -320,25 +304,15 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
 
   // Auto-connect when sessionId and userId are provided
   useEffect(() => {
-    console.log('🔗 useRealtimeChat useEffect triggered:', { sessionId, userId });
-    
     // Only attempt connection if both sessionId and userId are valid strings
     if (sessionId && userId && typeof sessionId === 'string' && typeof userId === 'string') {
-      console.log('✅ Both sessionId and userId available, attempting connection...');
       connect(sessionId, userId);
     } else {
-      console.log('❌ Missing or invalid sessionId or userId:', { 
-        sessionId: !!sessionId, 
-        userId: !!userId,
-        sessionIdType: typeof sessionId,
-        userIdType: typeof userId
-      });
       // Don't attempt connection if we don't have valid IDs
       return;
     }
 
     return () => {
-      console.log('🔌 useRealtimeChat cleanup, disconnecting...');
       disconnect();
     };
   }, [sessionId, userId]); // Removed connect and disconnect to prevent infinite loop

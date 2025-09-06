@@ -27,8 +27,6 @@ export default async function handler(
   try {
     const { user_id, interests = [] }: CreateSessionRequest = req.body;
 
-    console.log('🔍 CREATE SESSION REQUEST:', { user_id, interests });
-
     if (!user_id) {
       return res.status(400).json({
         success: false,
@@ -62,7 +60,6 @@ export default async function handler(
       const isStale = new Date(session.updated_at) < new Date(fiveMinutesAgo);
       
       if (isStale) {
-        console.log('🗑️ Found stale session, closing it:', session.id);
         // Close the stale session
         await (supabase as any)
           .from('chat_sessions')
@@ -81,7 +78,6 @@ export default async function handler(
           .single();
         
         if (!otherUser || !otherUser.is_active) {
-          console.log('👻 Other user is inactive, closing session:', session.id);
           // Close the session if other user is inactive
           await (supabase as any)
             .from('chat_sessions')
@@ -92,7 +88,6 @@ export default async function handler(
             })
             .eq('id', session.id);
         } else {
-          console.log('✅ User rejoining valid existing session:', session.id);
           return res.status(200).json({
             success: true,
             session_id: session.id,
@@ -100,7 +95,6 @@ export default async function handler(
           });
         }
       } else if (session.status === 'waiting') {
-        console.log('✅ User rejoining waiting session:', session.id);
         return res.status(200).json({
           success: true,
           session_id: session.id,
@@ -108,8 +102,6 @@ export default async function handler(
         });
       }
     }
-
-    console.log('🔍 Looking for waiting sessions to join...');
 
     // Look for a waiting session to join (with interest matching)
     let matchingSession = null;
@@ -172,23 +164,20 @@ export default async function handler(
             const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
             if (new Date(user1.last_seen) > new Date(twoMinutesAgo)) {
               matchingSession = { id: session.id, user1_id: session.user1_id };
-              console.log('🎯 Found active waiting session to join:', matchingSession.id);
               break;
             }
           }
         }
         
         if (!matchingSession) {
-          console.log('❌ No active waiting sessions found');
+          // No active waiting sessions found
         }
       } else {
-        console.log('❌ No waiting sessions found');
+        // No waiting sessions found
       }
     }
 
     if (matchingSession) {
-      console.log('🔗 Joining existing waiting session:', matchingSession.id);
-      
       // Join existing waiting session
       const { data: updatedSession, error: updateError } = await (supabase as any)
         .from('chat_sessions')
@@ -227,7 +216,6 @@ export default async function handler(
         message: 'Joined existing session'
       });
     } else {
-      console.log('🆕 Creating new waiting session for user:', user_id);
       // Create new waiting session
       const { data: newSession, error: createError } = await (supabase as any)
         .from('chat_sessions')

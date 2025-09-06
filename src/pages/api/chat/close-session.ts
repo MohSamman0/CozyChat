@@ -82,7 +82,7 @@ export default async function handler(
       });
     }
 
-    console.log(`🔒 Session ${session_id} closed by user ${user_id}`);
+    // Session closed by user
 
     return res.status(200).json({
       success: true

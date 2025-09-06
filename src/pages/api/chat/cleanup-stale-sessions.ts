@@ -68,7 +68,7 @@ export default async function handler(
       });
     }
 
-    console.log(`🧹 Cleaned up ${staleSessions.length} stale sessions:`, sessionIds);
+    // Cleaned up stale sessions
 
     return res.status(200).json({
       success: true,

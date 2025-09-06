@@ -571,4 +571,24 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ---
 
+## 💼 **Business & Commercial Use**
+
+### **Open Source Core**
+This repository contains the core CozyChat platform under MIT License. Feel free to use, modify, and distribute for personal and commercial projects.
+
+### **Premium Services & Enterprise**
+For businesses and organizations requiring additional features, support, or custom implementations:
+
+- **🏢 Enterprise Features**: Advanced moderation, analytics, custom branding
+- **🚀 Premium Hosting**: Managed infrastructure and scaling
+- **🎨 Custom Development**: Tailored solutions for your specific needs
+- **📚 Training & Support**: Implementation guidance and ongoing support
+
+**Contact**: [Your Business Email] for enterprise inquiries and custom solutions.
+
+### **Commercial Licensing**
+While the core platform is open source, premium features and enterprise solutions are available under commercial licensing terms.
+
+---
+
 *Last updated: December 2024 - Production-ready real-time anonymous chat platform*
