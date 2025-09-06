@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { Button } from '@/components/ui';
@@ -51,11 +51,11 @@ export const ReactionPicker = ({
   }, {} as Record<string, number>);
 
   // Check which reactions the current user has made
-  const userReactions = new Set(
+  const userReactions = useMemo(() => new Set(
     existingReactions
       .filter(r => r.user_id === currentUserId)
       .map(r => r.reaction)
-  );
+  ), [existingReactions, currentUserId]);
 
   const handleReaction = useCallback(async (reaction: string) => {
     if (disabled || isReacting) return;
