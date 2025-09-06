@@ -134,7 +134,7 @@ export default function ChatPage() {
       // Recover user from sessionStorage
       dispatch(setCurrentUser({
         id: existingUserId,
-        session_id: null, // Will be set when session is created
+        session_id: existingUserId, // Use user ID as temporary session ID
         interests: [], // Default interests, can be enhanced later
         is_active: true,
         connected_at: new Date().toISOString(),
