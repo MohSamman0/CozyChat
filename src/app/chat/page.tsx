@@ -20,9 +20,9 @@ export default function ChatPage() {
   // Initialize theme hook at the top to ensure it's available throughout component lifecycle
   const themeHook = useTheme();
   
-  const { currentUser } = useAppSelector(state => state.user);
-  const { currentSession, messages, isLoading, typingIndicators } = useAppSelector(state => state.chat);
-  const { status: connectionStatus, metrics } = useAppSelector(state => state.connection);
+  const { currentUser } = useAppSelector((state: any) => state.user);
+  const { currentSession, messages, isLoading, typingIndicators } = useAppSelector((state: any) => state.chat);
+  const { status: connectionStatus, metrics } = useAppSelector((state: any) => state.connection);
   
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -578,7 +578,7 @@ export default function ChatPage() {
 
           {/* Messages Container */}
           <div className="cozy-messages-container" id="cozy-messages-container">
-            {messages.map((msg) => (
+            {messages.map((msg: any) => (
               <div 
                 key={msg.id}
                 className={`cozy-message-wrapper ${msg.is_own_message ? 'own' : 'stranger'}`}
@@ -607,7 +607,7 @@ export default function ChatPage() {
             ))}
 
             {/* Typing Indicator */}
-            {typingIndicators.filter(t => t.is_typing).length > 0 && (
+            {typingIndicators.filter((t: any) => t.is_typing).length > 0 && (
               <div className="cozy-typing-indicator">
                 <div className="cozy-typing-bubble">
                   <span>Stranger is typing</span>
