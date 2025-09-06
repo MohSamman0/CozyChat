@@ -5,6 +5,38 @@ All notable changes to CozyChat will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2024-12-18 - Critical Session Management & Production Deployment
+
+### 🔧 Fixed
+- **Critical Session Issues**: Fixed ghost sessions where users connected without another user searching
+- **Session Cleanup**: Implemented proper session cleanup when users leave or refresh pages
+- **Refresh Recovery**: Fixed issue where both users would search but never connect after page refresh
+- **Infinite Loop Bug**: Resolved useRealtimeChat hook infinite loop causing chat page crashes
+- **Build Errors**: Fixed all TypeScript and ESLint errors preventing production deployment
+- **User Activity Tracking**: Added heartbeat mechanism to keep users active and prevent stale sessions
+
+### ✨ Added
+- **Session Validation**: Sessions are now validated for user activity before reuse
+- **Stale Session Detection**: Sessions older than 5 minutes are automatically closed
+- **User Activity API**: New endpoint to track and update user activity status
+- **Race Condition Prevention**: Random delays and better logic to prevent simultaneous session creation
+- **Enhanced Error Handling**: Better error recovery and session state management
+- **Production Deployment**: Successfully deployed to Vercel with all fixes
+
+### 🚀 Technical Improvements
+- **Aggressive Cleanup**: Reduced stale session cleanup from 2 hours to 10 minutes
+- **Activity-Based Matching**: Only match with users who were active in the last 2 minutes
+- **Session State Clearing**: Clear invalid sessions on user recovery from sessionStorage
+- **Better Session Creation**: Improved logic with proper error handling and retry mechanisms
+- **Type Safety**: Added proper type casting for Supabase operations
+- **React Hooks**: Fixed all ESLint warnings and dependency issues
+
+### 🎯 Production Ready
+- **Live Deployment**: Application successfully deployed at cozy-chat-gilt.vercel.app
+- **All Critical Issues Resolved**: No more ghost sessions, infinite loops, or build failures
+- **Robust Session Management**: Users can now chat reliably without session issues
+- **Clean Codebase**: All TypeScript and ESLint errors resolved
+
 ## [0.5.0] - 2024-12-18 - Global Theme System & UX Flow Improvements
 
 ### ✨ Added

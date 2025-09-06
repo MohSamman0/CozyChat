@@ -2,7 +2,22 @@
 
 ## Overview
 
-This document outlines the major UX improvements made to CozyChat, focusing on user flow optimization, theme system implementation, and session management enhancements.
+This document outlines the major UX improvements made to CozyChat, focusing on user flow optimization, theme system implementation, session management enhancements, and critical production fixes.
+
+## 🚀 Production Deployment Status
+
+### Live Application
+- **URL**: [cozy-chat-gilt.vercel.app](https://cozy-chat-gilt.vercel.app)
+- **Status**: ✅ Successfully deployed and operational
+- **Version**: 0.6.0 - Critical Session Management & Production Deployment
+
+### Critical Issues Resolved
+- ✅ **Ghost Sessions**: Fixed users connecting without another user searching
+- ✅ **Session Cleanup**: Proper cleanup when users leave or refresh pages
+- ✅ **Refresh Recovery**: Fixed both users searching but never connecting after refresh
+- ✅ **Infinite Loop**: Resolved useRealtimeChat hook causing chat page crashes
+- ✅ **Build Errors**: Fixed all TypeScript and ESLint errors
+- ✅ **User Activity**: Added heartbeat mechanism for active user tracking
 
 ## 🎨 Global Theme System
 
@@ -218,6 +233,32 @@ src/
 - **Safe Areas**: Proper handling of device notches and home indicators
 - **Responsive Design**: Mobile-first approach with tablet/desktop enhancements
 - **Performance**: Optimized for mobile devices and slower connections
+
+## 🔧 Critical Session Management Fixes (v0.6.0)
+
+### Session Validation & Cleanup
+- **Stale Session Detection**: Sessions older than 5 minutes are automatically closed
+- **User Activity Validation**: Before rejoining a session, check if the other user is still active
+- **Active User Filtering**: Only match with users who were active in the last 2 minutes
+- **Session State Clearing**: Clear invalid sessions on user recovery from sessionStorage
+
+### Race Condition Prevention
+- **Random Delays**: Added 0-2 second delays to prevent simultaneous session creation
+- **Better Error Handling**: Clear failed sessions to allow retry
+- **User Activity Tracking**: Added heartbeat mechanism to keep users active
+- **Session Loop Prevention**: Removed currentSession from useEffect dependencies
+
+### User Activity Tracking
+- **Heartbeat API**: New `/api/user/update-activity` endpoint
+- **Activity Updates**: User's `last_seen` timestamp updated every 30 seconds
+- **Active Status**: Users marked as active during chat sessions
+- **Cleanup Integration**: Inactive users are filtered out of session matching
+
+### Technical Improvements
+- **Type Safety**: Added proper type casting for Supabase operations
+- **React Hooks**: Fixed all ESLint warnings and dependency issues
+- **Error Recovery**: Better handling of failed sessions and user recovery
+- **Performance**: Reduced database queries and improved matching logic
 
 ## 🚀 Future Enhancements
 
