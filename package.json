@@ -1,8 +1,9 @@
 {
   "name": "cozy-chat",
-  "version": "0.4.0",
-  "description": "CozyChat v0.4.0 - A fully functional real-time anonymous chat platform with instant user matching, encrypted messaging, and beautiful cozy UI. Real-time chat foundation complete!",
+  "version": "0.6.0",
+  "description": "CozyChat v0.6.0 - Production-ready real-time anonymous chat platform with robust session management, global theme system, and comprehensive error handling. Successfully deployed and operational.",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
