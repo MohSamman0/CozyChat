@@ -276,7 +276,7 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
       onError?.(error instanceof Error ? error : new Error('Connection failed'));
       attemptReconnection(sessionId, userId, connect);
     }
-  }, [dispatch, initializeEncryption, handleIncomingMessage, onSessionUpdate, onError, startHeartbeat, attemptReconnection]);
+  }, [dispatch, initializeEncryption, handleIncomingMessage, onSessionUpdate, onError, startHeartbeat, attemptReconnection, userId]);
 
   // Disconnect from realtime (but don't cleanup session automatically)
   const disconnect = useCallback(() => {
@@ -333,7 +333,7 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
       console.log('🔌 useRealtimeChat cleanup, disconnecting...');
       disconnect();
     };
-  }, [sessionId, userId, connect, disconnect]); // Added connect and disconnect to deps
+  }, [sessionId, userId]); // Removed connect and disconnect from deps to prevent infinite loop
 
   return {
     connect,
