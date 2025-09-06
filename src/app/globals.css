@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import global cozy theme system */
+@import '../styles/chat-cozy.css';
+
+@layer base {
+  html {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-poppins), system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .cozy-button {
+    background-color: var(--cozy-accent);
+    color: var(--cozy-accent-contrast);
+    @apply font-medium py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    box-shadow: var(--cozy-shadow-md);
+  }
+  
+  .cozy-button:hover {
+    background-color: var(--cozy-accent-hover);
+    box-shadow: var(--cozy-shadow-lg);
+  }
+  
+  .cozy-button-secondary {
+    background-color: var(--cozy-surface-2);
+    color: var(--cozy-text);
+    @apply font-medium py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    border: 1px solid var(--cozy-border);
+    box-shadow: var(--cozy-shadow-sm);
+  }
+  
+  .cozy-button-secondary:hover {
+    background-color: var(--cozy-border-hover);
+  }
+  
+  .cozy-card {
+    background-color: var(--cozy-surface);
+    @apply rounded-3xl p-6;
+    border: 1px solid var(--cozy-border);
+    box-shadow: var(--cozy-shadow-md);
+  }
+  
+  .cozy-input {
+    @apply w-full px-4 py-3 rounded-2xl border-2 transition-all duration-200;
+    background-color: var(--cozy-surface);
+    border-color: var(--cozy-border);
+    color: var(--cozy-text);
+  }
+  
+  .cozy-input:focus {
+    border-color: var(--cozy-accent);
+    box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.1);
+    outline: none;
+  }
+  
+  .cozy-input::placeholder {
+    color: var(--cozy-text-muted);
+  }
+}
