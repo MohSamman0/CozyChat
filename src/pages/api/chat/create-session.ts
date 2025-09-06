@@ -38,10 +38,10 @@ export default async function handler(
 
     const supabase = createAdminClient();
 
-    // Check if user already has an active session
+    // Check if user already has an active session and validate it
     const { data: existingSessions, error: checkError } = await supabase
       .from('chat_sessions')
-      .select('id, status')
+      .select('id, status, user1_id, user2_id, updated_at')
       .eq('user1_id', user_id)
       .in('status', ['waiting', 'active'])
       .limit(1);
@@ -55,13 +55,58 @@ export default async function handler(
     }
 
     if (existingSessions && existingSessions.length > 0) {
-      const session = existingSessions[0] as { id: string; status: string };
-      console.log('✅ User rejoining existing session:', session.id);
-      return res.status(200).json({
-        success: true,
-        session_id: session.id,
-        message: 'Rejoined existing session'
-      });
+      const session = existingSessions[0] as { id: string; status: string; user1_id: string; user2_id: string | null; updated_at: string };
+      
+      // Check if session is stale (older than 5 minutes without updates)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const isStale = new Date(session.updated_at) < new Date(fiveMinutesAgo);
+      
+      if (isStale) {
+        console.log('🗑️ Found stale session, closing it:', session.id);
+        // Close the stale session
+        await supabase
+          .from('chat_sessions')
+          .update({
+            status: 'ended',
+            ended_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', session.id);
+      } else if (session.status === 'active' && session.user2_id) {
+        // Check if the other user is still active
+        const { data: otherUser } = await supabase
+          .from('anonymous_users')
+          .select('is_active, last_seen')
+          .eq('id', session.user2_id)
+          .single();
+        
+        if (!otherUser || !otherUser.is_active) {
+          console.log('👻 Other user is inactive, closing session:', session.id);
+          // Close the session if other user is inactive
+          await supabase
+            .from('chat_sessions')
+            .update({
+              status: 'ended',
+              ended_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', session.id);
+        } else {
+          console.log('✅ User rejoining valid existing session:', session.id);
+          return res.status(200).json({
+            success: true,
+            session_id: session.id,
+            message: 'Rejoined existing session'
+          });
+        }
+      } else if (session.status === 'waiting') {
+        console.log('✅ User rejoining waiting session:', session.id);
+        return res.status(200).json({
+          success: true,
+          session_id: session.id,
+          message: 'Rejoined existing session'
+        });
+      }
     }
 
     console.log('🔍 Looking for waiting sessions to join...');
@@ -104,15 +149,38 @@ export default async function handler(
     if (!matchingSession) {
       const { data: anySession } = await (supabase as any)
         .from('chat_sessions')
-        .select('id, user1_id')
+        .select(`
+          id, 
+          user1_id,
+          created_at,
+          anonymous_users!chat_sessions_user1_id_fkey (
+            is_active,
+            last_seen
+          )
+        `)
         .eq('status', 'waiting')
         .neq('user1_id', user_id)
         .order('created_at', { ascending: true }) // Get oldest waiting session first
-        .limit(1);
+        .limit(5); // Check multiple sessions to find an active user
 
       if (anySession && anySession.length > 0) {
-        matchingSession = anySession[0];
-        console.log('🎯 Found waiting session to join:', matchingSession.id);
+        // Find a session where the user is still active
+        for (const session of anySession as any[]) {
+          const user1 = session.anonymous_users;
+          if (user1 && user1.is_active) {
+            // Check if user was active in the last 2 minutes
+            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+            if (new Date(user1.last_seen) > new Date(twoMinutesAgo)) {
+              matchingSession = { id: session.id, user1_id: session.user1_id };
+              console.log('🎯 Found active waiting session to join:', matchingSession.id);
+              break;
+            }
+          }
+        }
+        
+        if (!matchingSession) {
+          console.log('❌ No active waiting sessions found');
+        }
       } else {
         console.log('❌ No waiting sessions found');
       }

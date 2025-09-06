@@ -33,6 +33,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const stuckTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const { sendMessage, sendTypingIndicator, isConnected } = useRealtimeChat({
     sessionId: currentSession?.id,
@@ -131,6 +132,9 @@ export default function ChatPage() {
     if (existingUserId && !currentUser) {
       console.log('🔄 Recovering user from sessionStorage after refresh:', existingUserId);
       
+      // Clear any existing session state to ensure fresh start
+      dispatch(clearChat());
+      
       // Recover user from sessionStorage
       dispatch(setCurrentUser({
         id: existingUserId,
@@ -194,11 +198,23 @@ export default function ChatPage() {
     let isCreatingSession = false;
     
     const createSession = async () => {
-      // Allow session creation if no current session OR if current session is ended
-      if (!currentUser || (currentSession && currentSession.status !== 'ended') || initializingUser || isCreatingSession) return;
+      // Only create session if:
+      // 1. We have a current user
+      // 2. User initialization is complete
+      // 3. We don't already have an active session
+      // 4. We're not already creating a session
+      if (!currentUser || initializingUser || isCreatingSession) return;
+      
+      // If we have a current session, only proceed if it's ended
+      if (currentSession && currentSession.status !== 'ended') {
+        return;
+      }
 
       isCreatingSession = true;
-      const delay = Math.random() * 1000;
+      console.log('🚀 Creating/joining session for user:', currentUser.id);
+      
+      // Add a small random delay to prevent race conditions
+      const delay = Math.random() * 2000; // 0-2 seconds
       await new Promise(resolve => setTimeout(resolve, delay));
 
       try {
@@ -207,14 +223,18 @@ export default function ChatPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: currentUser.id,
-            interests: currentUser.interests,
+            interests: currentUser.interests || [],
           }),
         });
 
-        if (!response.ok) throw new Error('Failed to create session');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create session');
+        }
 
         const data = await response.json();
         if (data.success) {
+          console.log('✅ Session created/joined:', data.session_id, data.message);
           dispatch(setCurrentSession({
             id: data.session_id,
             user1_id: currentUser.id,
@@ -224,13 +244,47 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error('Failed to create session:', error);
+        // If session creation fails, clear any existing session to allow retry
+        if (currentSession) {
+          dispatch(clearChat());
+        }
       } finally {
         isCreatingSession = false;
       }
     };
 
     createSession();
-  }, [currentUser, initializingUser, dispatch, currentSession]);
+  }, [currentUser, initializingUser, dispatch]); // Removed currentSession from deps to prevent loops
+
+  // Heartbeat to keep user active
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const updateActivity = async () => {
+      try {
+        await fetch('/api/user/update-activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: currentUser.id }),
+        });
+      } catch (error) {
+        console.error('Failed to update user activity:', error);
+      }
+    };
+
+    // Update activity immediately
+    updateActivity();
+
+    // Set up heartbeat every 30 seconds
+    heartbeatIntervalRef.current = setInterval(updateActivity, 30000);
+
+    return () => {
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+    };
+  }, [currentUser]);
 
   const handleSendMessage = async () => {
     if (!message.trim() || !isConnected || !sendMessage || isSending) return;

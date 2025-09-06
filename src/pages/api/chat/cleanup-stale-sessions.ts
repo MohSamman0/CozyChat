@@ -22,14 +22,14 @@ export default async function handler(
   try {
     const supabase = createAdminClient();
 
-    // Find sessions that have been active for more than 2 hours without updates
-    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    // Find sessions that have been inactive for more than 10 minutes
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     
     const { data: staleSessions, error: fetchError } = await (supabase as any)
       .from('chat_sessions')
       .select('id, status, updated_at')
       .in('status', ['active', 'waiting'])
-      .lt('updated_at', twoHoursAgo);
+      .lt('updated_at', tenMinutesAgo);
 
     if (fetchError) {
       console.error('Error fetching stale sessions:', fetchError);
