@@ -74,7 +74,7 @@ export default async function handler(
           .eq('id', session.id);
       } else if (session.status === 'active' && session.user2_id) {
         // Check if the other user is still active
-        const { data: otherUser } = await supabase
+        const { data: otherUser } = await (supabase as any)
           .from('anonymous_users')
           .select('is_active, last_seen')
           .eq('id', session.user2_id)
