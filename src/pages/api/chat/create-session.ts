@@ -64,7 +64,7 @@ export default async function handler(
       if (isStale) {
         console.log('🗑️ Found stale session, closing it:', session.id);
         // Close the stale session
-        await supabase
+        await (supabase as any)
           .from('chat_sessions')
           .update({
             status: 'ended',
@@ -83,7 +83,7 @@ export default async function handler(
         if (!otherUser || !otherUser.is_active) {
           console.log('👻 Other user is inactive, closing session:', session.id);
           // Close the session if other user is inactive
-          await supabase
+          await (supabase as any)
             .from('chat_sessions')
             .update({
               status: 'ended',

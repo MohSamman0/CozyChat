@@ -254,7 +254,7 @@ export default function ChatPage() {
     };
 
     createSession();
-  }, [currentUser, initializingUser, dispatch]); // Removed currentSession from deps to prevent loops
+  }, [currentUser, initializingUser, dispatch, currentSession]); // Added currentSession back but with proper logic to prevent loops
 
   // Heartbeat to keep user active
   useEffect(() => {
