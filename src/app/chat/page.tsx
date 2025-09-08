@@ -185,11 +185,15 @@ export default function ChatPage() {
     const initializeUser = async () => {
       sessionStorage.setItem('cozy-chat-creating-user', 'true');
       
+      // Read interests from session storage
+      const storedInterests = sessionStorage.getItem('cozy-chat-interests');
+      const userInterests = storedInterests ? JSON.parse(storedInterests) : [];
+      
       try {
         const response = await fetch('/api/user/create-anonymous', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ interests: [] }),
+          body: JSON.stringify({ interests: userInterests }),
         });
 
         if (!response.ok) throw new Error('Failed to create user');
@@ -255,12 +259,16 @@ export default function ChatPage() {
       await new Promise(resolve => setTimeout(resolve, delay));
 
       try {
+        // Read interests from session storage for session creation
+        const storedInterests = sessionStorage.getItem('cozy-chat-interests');
+        const sessionInterests = storedInterests ? JSON.parse(storedInterests) : (currentUser.interests || []);
+        
         const response = await fetch('/api/chat/create-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             user_id: currentUser.id,
-            interests: currentUser.interests || [],
+            interests: sessionInterests,
           }),
         });
 
@@ -411,6 +419,10 @@ export default function ChatPage() {
       // Clear current chat state
       dispatch(clearChat());
       
+      // Read interests from session storage for new chat
+      const storedInterests = sessionStorage.getItem('cozy-chat-interests');
+      const newChatInterests = storedInterests ? JSON.parse(storedInterests) : (currentUser.interests || []);
+      
       // Start a new chat
       const response = await fetch('/api/chat/create-session', {
         method: 'POST',
@@ -419,7 +431,7 @@ export default function ChatPage() {
         },
         body: JSON.stringify({
           user_id: currentUser.id,
-          interests: currentUser.interests || [],
+          interests: newChatInterests,
         }),
       });
 

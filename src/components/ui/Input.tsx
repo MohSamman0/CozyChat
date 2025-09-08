@@ -26,7 +26,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={type}
             className={cn(
               'cozy-input',
-              icon && 'pl-10',
+              icon && 'pl-12',
               error && 'border-red-300 focus:border-red-400 focus:ring-red-100',
               className
             )}

@@ -8,10 +8,23 @@ import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
-  const [interests, setInterests] = useState('');
+  const [interestInput, setInterestInput] = useState('');
   const [isStarting, setIsStarting] = useState(false);
 
+  const parseInterests = (input: string): string[] => {
+    return input
+      .split(',')
+      .map(i => i.trim().toLowerCase())
+      .filter(i => i.length > 0)
+      .slice(0, 10); // Limit to 10 interests
+  };
+
   const handleStartChat = () => {
+    const parsedInterests = parseInterests(interestInput);
+    
+    // Store in session storage
+    sessionStorage.setItem('cozy-chat-interests', JSON.stringify(parsedInterests));
+    
     setIsStarting(true);
     // Simulate a brief loading state before navigation
     setTimeout(() => {
@@ -84,6 +97,34 @@ export default function Home() {
                   📖 Learn More
                 </Button>
               </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
+                className="max-w-md mx-auto mt-8"
+              >
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-lg">
+                    🏷️
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Your interests (optional)"
+                    value={interestInput}
+                    onChange={(e) => setInterestInput(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100 transition-all duration-200"
+                    style={{ 
+                      backgroundColor: 'var(--cozy-surface)',
+                      borderColor: 'var(--cozy-border)',
+                      color: 'var(--cozy-text)'
+                    }}
+                  />
+                </div>
+                <p className="text-sm text-center mt-2" style={{ color: 'var(--cozy-text-muted)' }}>
+                  Add interests to find people with similar hobbies
+                </p>
+              </motion.div>
             </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16 features-section">
@@ -142,37 +183,6 @@ export default function Home() {
               </Card>
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="max-w-md mx-auto"
-            >
-              <Card variant="elevated">
-                <CardHeader>
-                  <CardTitle className="text-center">Ready to Start?</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Input
-                    placeholder="Your interests (optional)"
-                    value={interests}
-                    onChange={(e) => setInterests(e.target.value)}
-                    icon={<span>🏷️</span>}
-                  />
-                  <p className="text-sm text-center" style={{ color: 'var(--cozy-text-muted)' }}>
-                    Add interests to find people with similar hobbies
-                  </p>
-                  <Button 
-                    className="w-full" 
-                    size="lg"
-                    onClick={handleStartChat}
-                    isLoading={isStarting}
-                  >
-                    {isStarting ? '🔍 Finding Match...' : 'Find Someone to Chat With'}
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
           </div>
         </Container>
       </main>
