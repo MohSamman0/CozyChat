@@ -615,4 +615,125 @@ For enterprise support and custom development:
 - Documentation: https://docs.cozychat.com
 - Status Page: https://status.cozychat.com
 
+## Stale Session Fix Deployment
+
+### Quick Deployment Steps
+
+#### 1. Deploy Database Changes
+```bash
+# Apply the migration
+supabase db push
+
+# Or if using local development
+supabase db reset
+```
+
+#### 2. Set Environment Variables
+Add to your `.env.local` or production environment:
+```env
+# Required for cleanup API endpoint
+ADMIN_API_KEY=your-secure-admin-key-here
+
+# Existing variables (should already be set)
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+#### 3. Test the Implementation
+```bash
+# Run the test script
+node scripts/test-stale-session-fix.js
+```
+
+#### 4. Set Up Periodic Cleanup
+```bash
+# Set up cron job for automatic cleanup
+./scripts/setup-cleanup-cron.sh
+```
+
+### What's Been Implemented
+
+#### ✅ Enhanced Session Matching
+- **Session Age Limits**: Only match with sessions created within 5 minutes
+- **Activity Checks**: Only match with users active within 2 minutes
+- **Interest Matching**: Maintains existing interest-based matching
+- **Backward Compatibility**: 100% compatible with existing functionality
+
+#### ✅ Performance Improvements
+- **Optimized Indexes**: Faster session matching queries
+- **Enhanced Cleanup**: Better session cleanup logic
+- **Database Optimization**: Improved query performance
+
+#### ✅ Monitoring & Maintenance
+- **Admin API**: Manual cleanup endpoint at `/api/admin/cleanup-sessions`
+- **Cron Setup**: Automated cleanup every 5 minutes
+- **Test Script**: Comprehensive testing suite
+
+### Manual Testing
+
+#### Test Session Creation
+```bash
+# Test with curl
+curl -X POST "http://localhost:3000/api/chat/create-session" \
+  -H "Content-Type: application/json" \
+  -d '{"interests": ["technology", "programming"]}'
+```
+
+#### Test Cleanup Function
+```bash
+# Manual cleanup (requires ADMIN_API_KEY)
+curl -X POST "http://localhost:3000/api/admin/cleanup-sessions" \
+  -H "x-api-key: your-admin-key"
+```
+
+### Monitoring
+
+#### Database Health Check
+```sql
+-- Check active sessions
+SELECT COUNT(*) as active_sessions 
+FROM chat_sessions 
+WHERE status = 'active';
+
+-- Check waiting sessions
+SELECT COUNT(*) as waiting_sessions 
+FROM chat_sessions 
+WHERE status = 'waiting';
+
+-- Check recent activity
+SELECT COUNT(*) as recent_messages 
+FROM messages 
+WHERE created_at > now() - INTERVAL '1 hour';
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+**1. "No matches found" increase**
+- **Cause**: Stricter filtering may reduce available matches
+- **Solution**: Monitor for 24 hours, adjust timeouts if needed
+
+**2. Cleanup API returns 401**
+- **Cause**: Missing or incorrect ADMIN_API_KEY
+- **Solution**: Verify environment variable is set correctly
+
+**3. Cron job not running**
+- **Cause**: Incorrect setup or permissions
+- **Solution**: Check cron logs and verify script permissions
+
+#### Debug Commands
+```bash
+# Check cron jobs
+crontab -l
+
+# Test cleanup manually
+curl -X POST "http://localhost:3000/api/admin/cleanup-sessions" \
+  -H "x-api-key: your-admin-key" \
+  -v
+
+# Check database state
+psql your-database-url -c "SELECT COUNT(*) FROM chat_sessions WHERE status = 'waiting';"
+```
+
 This comprehensive deployment and setup guide ensures a smooth development and production experience for the Cozy Chat application.
