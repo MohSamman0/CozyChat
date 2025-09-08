@@ -1,6 +1,6 @@
--- Fix the session matching logic to be simpler and more reliable
--- Replace the complex atomic function with a simpler version
+-- Fix chat session issues: prevent auto-matching after chat ends and improve user disconnection
 
+-- Update the session creation function to properly handle user online status
 CREATE OR REPLACE FUNCTION create_or_join_session_atomic(user_id_param UUID, user_interests TEXT[])
 RETURNS TABLE(session_id UUID, action TEXT, message TEXT) AS $$
 DECLARE
@@ -17,9 +17,9 @@ BEGIN
         RAISE EXCEPTION 'User is banned';
     END IF;
     
-    -- Update user activity and ensure they're online
+    -- Update user activity and ensure they're active
     UPDATE anonymous_users 
-    SET is_active = true, is_online = true, last_seen = NOW(), interests = user_interests
+    SET is_active = true, last_seen = NOW(), interests = user_interests
     WHERE id = user_id_param;
     
     -- Look for any waiting session (simplified logic)
@@ -73,5 +73,46 @@ BEGIN
         
         RETURN QUERY SELECT new_session_id, 'created'::TEXT, 'Created new session, waiting for match'::TEXT;
     END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Add a function to properly end a session and disconnect both users
+CREATE OR REPLACE FUNCTION end_session_and_disconnect_users(session_id_param UUID, user_id_param UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+    session_record RECORD;
+BEGIN
+    -- Get session details
+    SELECT * INTO session_record
+    FROM chat_sessions
+    WHERE id = session_id_param
+    AND (user1_id = user_id_param OR user2_id = user_id_param)
+    AND status IN ('waiting', 'active');
+    
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF;
+    
+    -- End the session
+    UPDATE chat_sessions 
+    SET status = 'ended', 
+        ended_at = NOW(),
+        updated_at = NOW()
+    WHERE id = session_id_param;
+    
+    -- Mark both users as inactive to prevent immediate re-matching
+    UPDATE anonymous_users 
+    SET is_active = false,
+        last_seen = NOW()
+    WHERE id IN (session_record.user1_id, session_record.user2_id)
+    AND id IS NOT NULL;
+    
+    -- Add system message to notify the other user
+    IF session_record.user2_id IS NOT NULL THEN
+        INSERT INTO messages (session_id, sender_id, content, encrypted_content, message_type)
+        VALUES (session_id_param, user_id_param, 'Chat ended by other user', 'Chat ended by other user', 'system');
+    END IF;
+    
+    RETURN TRUE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

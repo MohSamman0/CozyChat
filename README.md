@@ -225,12 +225,38 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 - Check Realtime publication settings
 - Review browser console for errors
 
+**Chat session issues**
+- If users connect instantly without waiting, clean up old sessions in database
+- If "End Chat" doesn't work, check database function permissions
+- If "New Chat" doesn't end the other user's session, verify session cleanup logic
+
 **Build errors**
 - Clear Next.js cache: `rm -rf .next`
 - Reinstall dependencies: `rm -rf node_modules && npm install`
 - Check TypeScript errors: `npm run type-check`
 
+**React infinite loop errors**
+- If you see "Maximum update depth exceeded", check useEffect dependencies in `useRealtimeChat.ts`
+- Ensure circular dependencies are avoided in custom hooks
+
 See [Deployment Guide](DEPLOYMENT_AND_SETUP.md) for more troubleshooting tips.
+
+## 🔧 Recent Fixes (v0.6.1)
+
+### Chat Session Management Improvements
+- **Fixed automatic session creation**: Users no longer auto-match after ending a chat
+- **Improved session cleanup**: Both users are properly disconnected when one ends the chat
+- **Enhanced user controls**: Clear "New Chat" and "Go Home" options after chat ends
+- **Fixed instant connection issue**: Cleaned up old waiting sessions that caused immediate connections
+- **Resolved React infinite loops**: Fixed circular dependencies in realtime chat hook
+- **Improved error handling**: Better session state management and user feedback
+
+### Technical Improvements
+- Enhanced session polling and real-time updates
+- Improved database session cleanup logic
+- Better user status tracking (active/inactive states)
+- Fixed TypeScript and ESLint warnings
+- Optimized session creation and matching algorithms
 
 ## 📄 License
 

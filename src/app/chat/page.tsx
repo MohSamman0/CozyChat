@@ -234,10 +234,16 @@ export default function ChatPage() {
       // 2. User initialization is complete
       // 3. We don't already have an active session
       // 4. We're not already creating a session
+      // 5. We don't have an ended session (user should choose what to do next)
       if (!currentUser || initializingUser || isCreatingSession) return;
       
-      // If we have a current session, only proceed if it's ended
+      // If we have a current session, only proceed if it's ended AND user hasn't made a choice yet
       if (currentSession && currentSession.status !== 'ended') {
+        return;
+      }
+
+      // Don't auto-create session if current session is ended - let user choose
+      if (currentSession && currentSession.status === 'ended') {
         return;
       }
 
@@ -285,7 +291,7 @@ export default function ChatPage() {
     };
 
     createSession();
-  }, [currentUser, initializingUser, dispatch, currentSession]); // Added currentSession back but with proper logic to prevent loops
+  }, [currentUser, initializingUser, dispatch, currentSession]); // Include currentSession but with proper logic to prevent auto-creation after ended sessions
 
   // Heartbeat to keep user active
   useEffect(() => {
@@ -355,18 +361,26 @@ export default function ChatPage() {
         const error = await response.json();
         console.error('Failed to close session:', error);
       } else {
-        // Session closed successfully
+        // Session closed successfully - update local state
+        dispatch(updateSessionStatus({
+          sessionId: currentSession.id,
+          status: 'ended'
+        }));
+        
+        // Update the current session object with ended status
+        dispatch(setCurrentSession({
+          ...currentSession,
+          status: 'ended',
+          ended_at: new Date().toISOString()
+        }));
       }
     } catch (error) {
       console.error('Error closing session:', error);
-    } finally {
-      // Update session status to 'ended' to show ended state
+      // Even if the API call fails, update local state to show ended
       dispatch(updateSessionStatus({
         sessionId: currentSession.id,
         status: 'ended'
       }));
-      
-      // Chat session ended - staying on chat page
     }
   };
 
@@ -375,20 +389,28 @@ export default function ChatPage() {
     
     setIsSending(true);
     try {
-      // If there's a current session, try to close it first
+      // If there's a current session, end it first
       if (currentSession && currentSession.status === 'active') {
-        await fetch('/api/chat/close-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            session_id: currentSession.id,
-            user_id: currentUser.id,
-          }),
-        });
+        try {
+          await fetch('/api/chat/close-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              session_id: currentSession.id,
+              user_id: currentUser.id,
+            }),
+          });
+        } catch (error) {
+          console.error('Error closing current session:', error);
+          // Continue anyway
+        }
       }
-
+      
+      // Clear current chat state
+      dispatch(clearChat());
+      
       // Start a new chat
       const response = await fetch('/api/chat/create-session', {
         method: 'POST',
@@ -407,9 +429,6 @@ export default function ChatPage() {
       } else {
         const result = await response.json();
         // New chat started successfully
-        
-        // Clear current chat state but keep user
-        dispatch(clearChat());
         
         // Set new session
         if (result.success) {

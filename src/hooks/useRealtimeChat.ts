@@ -104,7 +104,7 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
       console.error('Failed to send message:', error);
       throw error;
     }
-  }, [currentSession, userId]);
+  }, [currentSession, userId, dispatch]);
 
   // Handle incoming message decryption
   const handleIncomingMessage = useCallback(async (payload: any) => {
@@ -293,6 +293,15 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
                 console.log('Session became active, refreshing messages...');
                 // The message listener will handle new messages automatically
               }
+              
+              // If session ended, stop session polling
+              if ((payload.new as any)?.status === 'ended') {
+                console.log('Session ended, stopping polling...');
+                if (sessionPollingRef.current) {
+                  clearInterval(sessionPollingRef.current);
+                  sessionPollingRef.current = null;
+                }
+              }
             }
           }
         )
@@ -330,7 +339,40 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
           startHeartbeat();
           
           // Start session polling as a fallback; it will stop itself when session becomes active
-          startSessionPolling(sessionId, userId);
+          // Call startSessionPolling directly to avoid circular dependency
+          if (sessionPollingRef.current) {
+            clearInterval(sessionPollingRef.current);
+          }
+
+          sessionPollingRef.current = setInterval(async () => {
+            try {
+              const resp = await fetch(`/api/chat/session-status?id=${sessionId}`);
+              if (!resp.ok) return;
+              const json = await resp.json();
+              const sessionData = json.session;
+              if (sessionData) {
+                const session: ChatSession = {
+                  id: sessionData.id,
+                  user1_id: sessionData.user1_id,
+                  user2_id: sessionData.user2_id,
+                  status: sessionData.status,
+                  started_at: sessionData.started_at,
+                  ended_at: sessionData.ended_at,
+                  created_at: sessionData.created_at,
+                };
+
+                dispatch(setCurrentSession(session));
+                dispatch(updateSessionStatus({ sessionId: session.id, status: session.status }));
+
+                if (session.status === 'active') {
+                  clearInterval(sessionPollingRef.current!);
+                  sessionPollingRef.current = null;
+                }
+              }
+            } catch {
+              // ignore transient errors
+            }
+          }, 2000);
         } else if (status === 'CHANNEL_ERROR') {
           dispatch(setConnectionStatus('error'));
           dispatch(setConnectionError('Failed to connect to chat'));
@@ -349,7 +391,8 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
       onError?.(error instanceof Error ? error : new Error('Connection failed'));
       attemptReconnection(sessionId, userId, connect);
     }
-  }, [dispatch, initializeEncryption, handleIncomingMessage, onSessionUpdate, onError, startHeartbeat, attemptReconnection]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, initializeEncryption, handleIncomingMessage, onSessionUpdate, onError, startHeartbeat, attemptReconnection]); // Intentionally excluding startSessionPolling to prevent circular dependency
 
   // Disconnect from realtime (but don't cleanup session automatically)
   const disconnect = useCallback(() => {
@@ -409,7 +452,8 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
     return () => {
       disconnect();
     };
-  }, [sessionId, userId]); // Removed connect and disconnect to prevent infinite loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId, userId]); // Intentionally excluding connect and disconnect to prevent infinite loop
 
   return {
     connect,

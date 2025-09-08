@@ -82,7 +82,37 @@ export default async function handler(
       });
     }
 
-    // Session closed by user
+    // Mark both users in the session as inactive to prevent them from being matched again immediately
+    const { error: userUpdateError } = await (supabase as any)
+      .from('anonymous_users')
+      .update({
+        is_active: false,
+        last_seen: new Date().toISOString()
+      })
+      .in('id', [session.user1_id, session.user2_id].filter(Boolean));
+
+    if (userUpdateError) {
+      console.error('Error updating user status:', userUpdateError);
+      // Don't fail the request, just log the error
+    }
+
+    // Add a system message to notify the other user that the chat ended
+    if (session.user2_id) {
+      const { error: messageError } = await (supabase as any)
+        .from('messages')
+        .insert({
+          session_id: session_id,
+          sender_id: user_id,
+          content: 'Chat ended by other user',
+          encrypted_content: 'Chat ended by other user',
+          message_type: 'system'
+        });
+
+      if (messageError) {
+        console.error('Error adding system message:', messageError);
+        // Don't fail the request, just log the error
+      }
+    }
 
     return res.status(200).json({
       success: true
