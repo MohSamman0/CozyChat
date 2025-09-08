@@ -9,9 +9,9 @@ import {
   setLoading,
   setError,
   clearChat,
-  Message,
   ChatSession
 } from '@/store/slices/chatSlice';
+import { Message, mapMessageRowToMessage } from '@/types/message';
 import {
   setConnectionStatus,
   updateLatency,
@@ -40,6 +40,7 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
   const encryptionKeyRef = useRef<CryptoKey | null>(null);
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const sessionPollingRef = useRef<NodeJS.Timeout | null>(null);
   
   const { sessionId, userId, onMessage, onSessionUpdate, onError } = options;
 
@@ -80,7 +81,25 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
         throw new Error(error.error || 'Failed to send message');
       }
 
-      return await response.json();
+      const json = await response.json();
+
+      // Optimistically add the message to local state in case realtime delivery is delayed
+      const nowIso = new Date().toISOString();
+      const messageRow = {
+        id: json?.message_id || `${Date.now()}`,
+        session_id: currentSession.id,
+        sender_id: userId,
+        content,
+        encrypted_content: encryptedContent,
+        message_type: 'text' as const,
+        is_flagged: false,
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
+      const optimistic = mapMessageRowToMessage(messageRow, userId);
+      dispatch(addMessage(optimistic));
+
+      return json;
     } catch (error) {
       console.error('Failed to send message:', error);
       throw error;
@@ -89,31 +108,80 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
 
   // Handle incoming message decryption
   const handleIncomingMessage = useCallback(async (payload: any) => {
-    if (!encryptionKeyRef.current) return;
+    if (!userId) return;
 
     try {
-      const decryptedContent = await decryptMessage(
-        payload.new.encrypted_content,
-        encryptionKeyRef.current
-      );
+      let content: string;
 
-      const message: Message = {
+      if (payload.new.message_type === 'system') {
+        // System messages are not encrypted; use plain content
+        content = payload.new.content;
+      } else {
+        if (!encryptionKeyRef.current) return;
+        content = await decryptMessage(
+          payload.new.encrypted_content,
+          encryptionKeyRef.current
+        );
+      }
+
+      const messageRow = {
         id: payload.new.id,
         session_id: payload.new.session_id,
         sender_id: payload.new.sender_id,
-        content: decryptedContent,
+        content,
+        encrypted_content: payload.new.encrypted_content,
         message_type: payload.new.message_type,
+        is_flagged: payload.new.is_flagged,
         created_at: payload.new.created_at,
-        is_own_message: payload.new.sender_id === userId,
+        updated_at: payload.new.updated_at,
       };
+
+      const message = mapMessageRowToMessage(messageRow, userId);
 
       dispatch(addMessage(message));
       onMessage?.(message);
     } catch (error) {
-      console.error('Failed to decrypt message:', error);
-      dispatch(setError('Failed to decrypt message'));
+      console.error('Failed to process incoming message:', error);
+      dispatch(setError('Failed to process incoming message'));
     }
   }, [dispatch, userId, onMessage]);
+
+  // Session polling for waiting users (re-enabled as fallback if realtime update is missed)
+  const startSessionPolling = useCallback((sessionId: string, userId: string) => {
+    if (sessionPollingRef.current) {
+      clearInterval(sessionPollingRef.current);
+    }
+
+    sessionPollingRef.current = setInterval(async () => {
+      try {
+        const resp = await fetch(`/api/chat/session-status?id=${sessionId}`);
+        if (!resp.ok) return;
+        const json = await resp.json();
+        const sessionData = json.session;
+        if (sessionData) {
+          const session: ChatSession = {
+            id: sessionData.id,
+            user1_id: sessionData.user1_id,
+            user2_id: sessionData.user2_id,
+            status: sessionData.status,
+            started_at: sessionData.started_at,
+            ended_at: sessionData.ended_at,
+            created_at: sessionData.created_at,
+          };
+
+          dispatch(setCurrentSession(session));
+          dispatch(updateSessionStatus({ sessionId: session.id, status: session.status }));
+
+          if (session.status === 'active') {
+            clearInterval(sessionPollingRef.current!);
+            sessionPollingRef.current = null;
+          }
+        }
+      } catch {
+        // ignore transient errors
+      }
+    }, 2000);
+  }, [dispatch]);
 
   // Connection health monitoring
   const startHeartbeat = useCallback(() => {
@@ -178,9 +246,13 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
             event: 'INSERT',
             schema: 'public',
             table: 'messages',
-            filter: `session_id=eq.${sessionId}`,
           },
-          handleIncomingMessage
+          (payload) => {
+            // Filter client-side by session_id to avoid Realtime filter validation issues
+            if (payload?.new?.session_id === sessionId) {
+              handleIncomingMessage(payload);
+            }
+          }
         )
         .on(
           'postgres_changes',
@@ -188,26 +260,40 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
             event: 'UPDATE',
             schema: 'public',
             table: 'chat_sessions',
-            filter: `id=eq.${sessionId}`,
           },
           (payload: RealtimePostgresChangesPayload<any>) => {
-            const session: ChatSession = {
-              id: payload.new.id,
-              user1_id: payload.new.user1_id,
-              user2_id: payload.new.user2_id,
-              status: payload.new.status,
-              started_at: payload.new.started_at,
-              ended_at: payload.new.ended_at,
-              created_at: payload.new.created_at,
-            };
-            
-            dispatch(updateSessionStatus({
-              sessionId: payload.new.id,
-              status: payload.new.status
-            }));
-            
-            dispatch(setCurrentSession(session));
-            onSessionUpdate?.(session);
+            // Filter client-side by session_id to avoid Realtime filter validation issues
+            if (payload?.new?.id === sessionId) {
+              console.log('Session update received:', payload.new);
+              
+              const session: ChatSession = {
+                id: payload.new.id,
+                user1_id: payload.new.user1_id,
+                user2_id: payload.new.user2_id,
+                status: payload.new.status,
+                started_at: payload.new.started_at,
+                ended_at: payload.new.ended_at,
+                created_at: payload.new.created_at,
+              };
+              
+              // Update session status in store
+              dispatch(updateSessionStatus({
+                sessionId: payload.new.id,
+                status: payload.new.status
+              }));
+              
+              // Update current session with full details
+              dispatch(setCurrentSession(session));
+              
+              // Notify parent component
+              onSessionUpdate?.(session);
+              
+              // If session became active, trigger a refresh of messages
+              if ((payload.new as any)?.status === 'active' && (payload.old as any)?.status === 'waiting') {
+                console.log('Session became active, refreshing messages...');
+                // The message listener will handle new messages automatically
+              }
+            }
           }
         )
         .on('broadcast', { event: 'typing' }, (payload) => {
@@ -242,6 +328,9 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
           dispatch(setLoading(false));
           dispatch(resetReconnectAttempts());
           startHeartbeat();
+          
+          // Start session polling as a fallback; it will stop itself when session becomes active
+          startSessionPolling(sessionId, userId);
         } else if (status === 'CHANNEL_ERROR') {
           dispatch(setConnectionStatus('error'));
           dispatch(setConnectionError('Failed to connect to chat'));
@@ -272,6 +361,11 @@ export const useRealtimeChat = (options: UseRealtimeChatOptions = {}) => {
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current);
       heartbeatIntervalRef.current = null;
+    }
+
+    if (sessionPollingRef.current) {
+      clearInterval(sessionPollingRef.current);
+      sessionPollingRef.current = null;
     }
 
     if (reconnectTimeoutRef.current) {

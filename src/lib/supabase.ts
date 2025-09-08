@@ -48,6 +48,23 @@ export const getCurrentUser = async () => {
   return user;
 };
 
+// Helper to set session context for RLS policies
+export const setSessionContext = async (sessionId: string): Promise<void> => {
+  try {
+    const { error } = await supabase.rpc('set_session_context', {
+      session_id: sessionId
+    } as any);
+    
+    if (error) {
+      console.error('Failed to set session context:', error);
+      throw new Error(`Failed to set session context: ${error.message}`);
+    }
+  } catch (err) {
+    console.error('Error setting session context:', err);
+    throw err;
+  }
+};
+
 // Helper to check if user is admin
 export const isAdmin = async (userId: string): Promise<boolean> => {
   try {

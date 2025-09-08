@@ -11,6 +11,7 @@ import { setCurrentSession, clearChat, updateSessionStatus } from '@/store/slice
 import { useRealtimeChat } from '@/hooks/useRealtimeChat';
 import { useTheme } from '@/hooks/useTheme';
 import { ThemeToggle } from '@/components/chat/ThemeToggle';
+import { setSessionContext } from '@/lib/supabase';
 // Global cozy theme is now imported via globals.css
 
 export default function ChatPage() {
@@ -38,8 +39,29 @@ export default function ChatPage() {
   const { sendMessage, sendTypingIndicator, isConnected } = useRealtimeChat({
     sessionId: currentSession?.id,
     userId: currentUser?.id,
+    onMessage: (message) => {
+      // Message received, scroll to bottom
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    },
+    onSessionUpdate: (session) => {
+      // Session updated (e.g., someone joined)
+      console.log('Session updated in chat page:', session);
+      dispatch(setCurrentSession(session));
+      
+      // If session became active, clear any stuck state
+      if (session.status === 'active') {
+        setIsStuck(false);
+        if (stuckTimeoutRef.current) {
+          clearTimeout(stuckTimeoutRef.current);
+          stuckTimeoutRef.current = null;
+        }
+      }
+    },
     onError: (error) => {
       console.error('Realtime chat error:', error);
+      setIsStuck(true);
     }
   });
 
@@ -143,6 +165,11 @@ export default function ChatPage() {
         connected_at: new Date().toISOString(),
         last_seen: new Date().toISOString(),
       }));
+
+      // Set session context for RLS policies (async)
+      setSessionContext(existingUserId).catch((error) => {
+        console.error('Failed to set session context:', error);
+      });
       
       setInitializingUser(false);
       return;
@@ -180,6 +207,11 @@ export default function ChatPage() {
             connected_at: new Date().toISOString(),
             last_seen: new Date().toISOString(),
           }));
+
+          // Set session context for RLS policies (async)
+          setSessionContext(data.user.session_id).catch((error) => {
+            console.error('Failed to set session context:', error);
+          });
         }
       } catch (error) {
         console.error('Failed to initialize user:', error);

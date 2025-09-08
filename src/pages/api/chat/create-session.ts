@@ -36,212 +36,36 @@ export default async function handler(
 
     const supabase = createAdminClient();
 
-    // Check if user already has an active session and validate it
-    const { data: existingSessions, error: checkError } = await supabase
-      .from('chat_sessions')
-      .select('id, status, user1_id, user2_id, updated_at')
-      .eq('user1_id', user_id)
-      .in('status', ['waiting', 'active'])
-      .limit(1);
+    // Use the atomic database function for session creation/joining
+    const { data, error } = await supabase.rpc('create_or_join_session_atomic', {
+      user_id_param: user_id,
+      user_interests: interests
+    } as any);
 
-    if (checkError) {
-      console.error('Error checking existing sessions:', checkError);
+    if (error) {
+      console.error('Session creation error:', error);
       return res.status(500).json({
         success: false,
-        error: 'Database error'
+        error: error.message || 'Failed to create session'
       });
     }
 
-    if (existingSessions && existingSessions.length > 0) {
-      const session = existingSessions[0] as { id: string; status: string; user1_id: string; user2_id: string | null; updated_at: string };
-      
-      // Check if session is stale (older than 5 minutes without updates)
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const isStale = new Date(session.updated_at) < new Date(fiveMinutesAgo);
-      
-      if (isStale) {
-        // Close the stale session
-        await (supabase as any)
-          .from('chat_sessions')
-          .update({
-            status: 'ended',
-            ended_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', session.id);
-      } else if (session.status === 'active' && session.user2_id) {
-        // Check if the other user is still active
-        const { data: otherUser } = await (supabase as any)
-          .from('anonymous_users')
-          .select('is_active, last_seen')
-          .eq('id', session.user2_id)
-          .single();
-        
-        if (!otherUser || !otherUser.is_active) {
-          // Close the session if other user is inactive
-          await (supabase as any)
-            .from('chat_sessions')
-            .update({
-              status: 'ended',
-              ended_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', session.id);
-        } else {
-          return res.status(200).json({
-            success: true,
-            session_id: session.id,
-            message: 'Rejoined existing session'
-          });
-        }
-      } else if (session.status === 'waiting') {
-        return res.status(200).json({
-          success: true,
-          session_id: session.id,
-          message: 'Rejoined existing session'
-        });
-      }
-    }
-
-    // Look for a waiting session to join (with interest matching)
-    let matchingSession = null;
-    
-    if (interests.length > 0) {
-      // Try to find a session from someone with matching interests
-      const { data: interestMatch } = await supabase
-        .from('chat_sessions')
-        .select(`
-          id,
-          user1_id,
-          anonymous_users!chat_sessions_user1_id_fkey (
-            interests
-          )
-        `)
-        .eq('status', 'waiting')
-        .neq('user1_id', user_id)
-        .limit(10);
-
-      if (interestMatch && interestMatch.length > 0) {
-        // Find the best interest match
-        for (const session of interestMatch as any[]) {
-          const user1Interests = session.anonymous_users?.interests || [];
-          const commonInterests = interests.filter((interest: string) => 
-            user1Interests.includes(interest)
-          );
-          
-          if (commonInterests.length > 0) {
-            matchingSession = session;
-            break;
-          }
-        }
-      }
-    }
-
-    // If no interest match, find any waiting session
-    if (!matchingSession) {
-      const { data: anySession } = await (supabase as any)
-        .from('chat_sessions')
-        .select(`
-          id, 
-          user1_id,
-          created_at,
-          anonymous_users!chat_sessions_user1_id_fkey (
-            is_active,
-            last_seen
-          )
-        `)
-        .eq('status', 'waiting')
-        .neq('user1_id', user_id)
-        .order('created_at', { ascending: true }) // Get oldest waiting session first
-        .limit(5); // Check multiple sessions to find an active user
-
-      if (anySession && anySession.length > 0) {
-        // Find a session where the user is still active
-        for (const session of anySession as any[]) {
-          const user1 = session.anonymous_users;
-          if (user1 && user1.is_active) {
-            // Check if user was active in the last 2 minutes
-            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
-            if (new Date(user1.last_seen) > new Date(twoMinutesAgo)) {
-              matchingSession = { id: session.id, user1_id: session.user1_id };
-              break;
-            }
-          }
-        }
-        
-        if (!matchingSession) {
-          // No active waiting sessions found
-        }
-      } else {
-        // No waiting sessions found
-      }
-    }
-
-    if (matchingSession) {
-      // Join existing waiting session
-      const { data: updatedSession, error: updateError } = await (supabase as any)
-        .from('chat_sessions')
-        .update({
-          user2_id: user_id,
-          status: 'active',
-          started_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', matchingSession.id)
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error('Error updating session:', updateError);
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to join session'
-        });
-      }
-
-      // Add system message about connection
-      await (supabase as any)
-        .from('messages')
-        .insert({
-          session_id: matchingSession.id,
-          sender_id: user_id,
-          content: 'Connected to chat!',
-          encrypted_content: 'Connected to chat!',
-          message_type: 'system'
-        });
-
-      return res.status(200).json({
-        success: true,
-        session_id: matchingSession.id,
-        message: 'Joined existing session'
-      });
-    } else {
-      // Create new waiting session
-      const { data: newSession, error: createError } = await (supabase as any)
-        .from('chat_sessions')
-        .insert({
-          user1_id: user_id,
-          status: 'waiting',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        console.error('Error creating session:', createError);
-        return res.status(500).json({
-          success: false,
-          error: 'Failed to create session'
-        });
-      }
-
-      return res.status(201).json({
-        success: true,
-        session_id: newSession.id,
-        message: 'Created new session, waiting for match'
+    if (!data || (Array.isArray(data) && (data as any[]).length === 0)) {
+      return res.status(500).json({
+        success: false,
+        error: 'No session data returned'
       });
     }
+
+    const sessionResult = Array.isArray(data) ? (data as any[])[0] : data as any;
+
+    return res.status(200).json({
+      success: true,
+      session_id: sessionResult.session_id,
+      message: sessionResult.message,
+      action: sessionResult.action
+    } as any);
+
   } catch (error) {
     console.error('Unexpected error in create-session:', error);
     return res.status(500).json({

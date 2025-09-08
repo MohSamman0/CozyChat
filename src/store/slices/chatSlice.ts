@@ -1,14 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-export interface Message {
-  id: string;
-  session_id: string;
-  sender_id: string;
-  content: string;
-  message_type: 'text' | 'system';
-  created_at: string;
-  is_own_message: boolean;
-}
+import { Message } from '@/types/message';
 
 export interface ChatSession {
   id: string;
@@ -55,14 +46,23 @@ export const chatSlice = createSlice({
     
     addMessage: (state, action: PayloadAction<Message>) => {
       const message = action.payload;
-      state.messages.push(message);
       
-      // Store in history
-      if (message.session_id) {
-        if (!state.messageHistory[message.session_id]) {
-          state.messageHistory[message.session_id] = [];
+      // Check for duplicates before adding
+      const existingMessage = state.messages.find(m => m.id === message.id);
+      if (!existingMessage) {
+        state.messages.push(message);
+        
+        // Store in history
+        if (message.session_id) {
+          if (!state.messageHistory[message.session_id]) {
+            state.messageHistory[message.session_id] = [];
+          }
+          // Also check for duplicates in history
+          const existingInHistory = state.messageHistory[message.session_id].find(m => m.id === message.id);
+          if (!existingInHistory) {
+            state.messageHistory[message.session_id].push(message);
+          }
         }
-        state.messageHistory[message.session_id].push(message);
       }
     },
     

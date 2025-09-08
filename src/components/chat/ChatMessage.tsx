@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Message } from '@/store/slices/chatSlice';
+import { Message } from '@/types/message';
 import { formatDistanceToNow } from 'date-fns';
 import { useState } from 'react';
 
