@@ -229,9 +229,9 @@ We follow [Semantic Versioning](https://semver.org/):
 ### Feature Roadmap
 Check `README.md` for current roadmap and priority features:
 - Phase 1: ✅ Foundation (Complete)
-- Phase 2: 🚧 Real-time Chat (In Progress)
-- Phase 3: 📋 Admin Dashboard (Planned)
-- Phase 4: 🚀 Production Features (Planned)
+- Phase 2: ✅ Real-time Chat (Complete)
+- Phase 3: ✅ Session Management (Complete)
+- Phase 4: 🚧 Production Readiness (In Progress)
 
 ## 🏆 Bounty Program (Future)
 
@@ -253,10 +253,10 @@ If you're migrating from an older chat platform:
 
 ### Documentation
 - `README.md` - Project overview and roadmap
-- `SETUP.md` - Development environment setup
-- `API.md` - API reference and examples
-- `DATABASE.md` - Database schema and operations
-- `DEPLOYMENT.md` - Production deployment guide
+- `DEPLOYMENT_AND_SETUP.md` - Development environment setup and deployment
+- `DATABASE_ARCHITECTURE.md` - Database schema and operations
+- `FRONTEND_ARCHITECTURE.md` - Frontend structure and patterns
+- `CHAT_FLOW_AND_FEATURES.md` - Complete feature documentation
 
 ### External Resources
 - [Next.js Documentation](https://nextjs.org/docs)

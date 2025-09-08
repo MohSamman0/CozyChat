@@ -1,7 +1,7 @@
 {
   "name": "cozy-chat",
-  "version": "0.6.1",
-  "description": "CozyChat v0.6.1 - Production-ready real-time anonymous chat platform with improved session management, fixed chat controls, and enhanced user experience. All major chat session issues resolved.",
+  "version": "0.6.2",
+  "description": "CozyChat v0.6.2 - Production-ready real-time anonymous chat platform with improved session management, fixed chat controls, enhanced user experience, and stale session fixes. All major chat session issues resolved.",
   "private": true,
   "license": "MIT",
   "scripts": {

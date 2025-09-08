@@ -111,9 +111,11 @@ npm run start        # Start production server
 npm run lint         # Run ESLint
 npm run type-check   # Run TypeScript compiler
 
-# Database
-npm run db:reset     # Reset database (development)
-npm run db:seed      # Seed database with test data
+# Database & Testing
+supabase db push     # Apply database migrations
+supabase db reset    # Reset database (development)
+node scripts/test-stale-session-fix.js  # Test stale session fix
+node scripts/validate-migration.js      # Validate migrations
 ```
 
 ### Project Structure
@@ -148,6 +150,7 @@ src/
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | Yes |
 | `NEXT_PUBLIC_APP_URL` | Application URL | Yes |
 | `NODE_ENV` | Environment mode | Yes |
+| `ADMIN_API_KEY` | Admin API key for cleanup endpoints | Optional |
 
 ### Database Configuration
 
@@ -219,10 +222,10 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 
 ## 📈 Monitoring
 
-- **Error Tracking**: Sentry integration
-- **Performance Monitoring**: Real-time metrics
-- **Database Health**: Automated health checks
-- **User Analytics**: Privacy-focused analytics
+- **Error Tracking**: Sentry integration (planned)
+- **Performance Monitoring**: Real-time metrics (planned)
+- **Database Health**: Automated health checks (planned)
+- **User Analytics**: Privacy-focused analytics (planned)
 
 ## 🐛 Troubleshooting
 

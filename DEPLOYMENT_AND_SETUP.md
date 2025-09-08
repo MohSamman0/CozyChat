@@ -48,6 +48,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 # Application Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NODE_ENV=development
+
+# Admin Configuration (Optional)
+ADMIN_API_KEY=your-secure-admin-key-here
 ```
 
 ### 4. Supabase Setup
@@ -142,6 +145,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_production_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_production_supabase_service_role_key
 NEXT_PUBLIC_APP_URL=https://your-vercel-app.vercel.app
 NODE_ENV=production
+ADMIN_API_KEY=your-secure-admin-key-here
 ```
 
 ### 2. Alternative Deployment Options
