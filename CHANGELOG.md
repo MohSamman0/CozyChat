@@ -5,6 +5,35 @@ All notable changes to Cozy Chat will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2025-01-27
+
+### Fixed
+- **Stale Session Issue**: Implemented comprehensive fix to prevent users from connecting to abandoned/stale chat sessions
+- **Session Age Limits**: Added 5-minute session age limit to prevent matching with old sessions
+- **Activity Checks**: Enhanced user activity validation (2-minute window) to ensure only active users are matched
+- **Database Cleanup**: Improved automatic cleanup of old sessions and inactive users
+- **Performance Optimization**: Added database indexes for faster session matching queries
+
+### Added
+- **Admin API**: New `/api/admin/cleanup-sessions` endpoint for manual database maintenance
+- **Automated Cleanup**: Cron job setup script for periodic session cleanup
+- **Migration Validation**: Comprehensive testing and validation scripts
+- **Deployment Guide**: Complete documentation for safe deployment of stale session fixes
+
+### Improved
+- **User Experience**: Users now only connect to recent, active sessions
+- **Database Performance**: Optimized queries with new indexes for faster matching
+- **System Reliability**: Better session cleanup prevents database bloat
+- **Monitoring**: Enhanced tools for tracking system health and performance
+
+### Technical Changes
+- Updated `create_or_join_session_atomic` function with session age and activity limits
+- Enhanced `cleanup_old_sessions` function with improved logic
+- Added performance indexes: `idx_waiting_pick` and `idx_users_active_recent`
+- Created migration `015_stale_session_fix.sql` with 100% backward compatibility
+- Added admin API endpoint for manual cleanup operations
+- Implemented automated cleanup scheduling with cron job setup
+
 ## [0.6.1] - 2025-09-08
 
 ### Fixed
