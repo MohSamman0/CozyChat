@@ -23,23 +23,49 @@ export const CozyFireIcon: React.FC<CozyFireIconProps> = ({
 }) => {
   const baseClasses = `${sizeClasses[size]} ${className}`;
 
-  // Fire animation variants
-  const fireVariants = {
-    initial: { 
-      scale: 1,
-      rotate: 0,
-      filter: 'brightness(1) saturate(1)'
-    },
+  // Fire flame animations - different flames flicker at different speeds
+  const flame1Variants = {
     animate: {
-      scale: [1, 1.05, 1, 1.03, 1],
-      rotate: [0, 2, -1, 1, 0],
-      filter: [
-        'brightness(1) saturate(1)',
-        'brightness(1.1) saturate(1.2)',
-        'brightness(0.95) saturate(0.9)',
-        'brightness(1.05) saturate(1.1)',
-        'brightness(1) saturate(1)'
+      d: [
+        // Base flame shape
+        "M12 20 C8 18, 7 15, 7 12 C7 10, 8.5 9, 10 9 C10 8, 11 7, 12 7 C13 7, 14 8, 14 9 C15.5 9, 17 10, 17 12 C17 15, 16 18, 12 20 Z",
+        // Flickering variations
+        "M12 20 C8.5 17.5, 7.2 14.8, 7.2 12.2 C7.2 10.1, 8.7 9.1, 10.1 9.1 C10.1 7.8, 11.2 6.8, 12.1 6.8 C13 6.8, 14.1 7.9, 14.1 9.1 C15.4 9.1, 16.8 10.2, 16.8 12.2 C16.8 14.9, 15.8 17.6, 12 20 Z",
+        "M12 20 C7.8 18.2, 6.8 15.2, 6.8 11.8 C6.8 9.8, 8.3 8.9, 9.9 8.9 C9.9 7.9, 10.8 6.9, 11.9 6.9 C12.9 6.9, 13.9 7.8, 13.9 8.9 C15.6 8.9, 17.2 9.7, 17.2 11.8 C17.2 15.1, 16.1 18.1, 12 20 Z",
+        // Back to base
+        "M12 20 C8 18, 7 15, 7 12 C7 10, 8.5 9, 10 9 C10 8, 11 7, 12 7 C13 7, 14 8, 14 9 C15.5 9, 17 10, 17 12 C17 15, 16 18, 12 20 Z"
       ],
+      transition: {
+        duration: 2.5,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    }
+  };
+
+  const flame2Variants = {
+    animate: {
+      d: [
+        // Inner flame
+        "M12 17 C10 16, 9 14, 9 12.5 C9 11.5, 10 11, 11 11 C11 10.5, 11.5 10, 12 10 C12.5 10, 13 10.5, 13 11 C14 11, 15 11.5, 15 12.5 C15 14, 14 16, 12 17 Z",
+        "M12 17 C10.2 15.8, 9.1 13.9, 9.1 12.6 C9.1 11.4, 10.1 10.9, 11.1 10.9 C11.1 10.3, 11.6 9.8, 12.1 9.8 C12.6 9.8, 13.1 10.4, 13.1 10.9 C14.1 10.9, 14.9 11.3, 14.9 12.6 C14.9 13.8, 13.9 15.7, 12 17 Z",
+        "M12 17 C9.9 15.9, 8.9 14.1, 8.9 12.4 C8.9 11.6, 9.8 11.1, 10.9 11.1 C10.9 10.6, 11.4 10.1, 11.9 10.1 C12.4 10.1, 12.9 10.5, 12.9 11.1 C13.9 11.1, 15.1 11.5, 15.1 12.4 C15.1 14.0, 14.2 15.8, 12 17 Z",
+        "M12 17 C10 16, 9 14, 9 12.5 C9 11.5, 10 11, 11 11 C11 10.5, 11.5 10, 12 10 C12.5 10, 13 10.5, 13 11 C14 11, 15 11.5, 15 12.5 C15 14, 14 16, 12 17 Z"
+      ],
+      transition: {
+        duration: 1.8,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: 0.3
+      }
+    }
+  };
+
+  // Glow animation
+  const glowVariants = {
+    animate: {
+      opacity: [0.4, 0.7, 0.5, 0.6, 0.4],
+      scale: [1, 1.1, 1.05, 1.08, 1],
       transition: {
         duration: 3,
         repeat: Infinity,
@@ -48,110 +74,79 @@ export const CozyFireIcon: React.FC<CozyFireIconProps> = ({
     }
   };
 
-  // Sparkle animation variants
-  const sparkleVariants = {
-    initial: { 
-      opacity: 0,
-      scale: 0,
-      rotate: 0
-    },
-    animate: {
-      opacity: [0, 1, 0],
-      scale: [0, 1, 0],
-      rotate: [0, 180, 360],
-      transition: {
-        duration: 2,
-        repeat: Infinity,
-        delay: Math.random() * 2,
-        ease: "easeInOut"
-      }
-    }
-  };
-
-  const FireIcon = animated ? motion.svg : 'svg';
-  const SparkleIcon = animated ? motion.circle : 'circle';
+  const FirePath1 = animated ? motion.path : 'path';
+  const FirePath2 = animated ? motion.path : 'path';
+  const GlowCircle = animated ? motion.circle : 'circle';
 
   return (
     <div className={`${baseClasses} relative flex items-center justify-center`}>
-      {/* Main Fire Icon */}
-      <FireIcon
+      <svg
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-full"
-        variants={animated ? fireVariants : undefined}
-        initial={animated ? "initial" : undefined}
-        animate={animated ? "animate" : undefined}
       >
-        {/* Fire base */}
-        <path
-          d="M12 22C12 22 8 18 8 14C8 12.8954 8.89543 12 10 12C10 10.8954 10.8954 10 12 10C12 8.89543 12.8954 8 14 8C14 6.89543 14.8954 6 16 6C16 4.89543 16.8954 4 18 4C18 2.89543 17.1046 2 16 2C14.8954 2 14 2.89543 14 4C14 5.10457 13.1046 6 12 6C10.8954 6 10 5.10457 10 4C10 2.89543 9.10457 2 8 2C6.89543 2 6 2.89543 6 4C6 5.10457 6.89543 6 8 6C8 7.10457 8.89543 8 10 8C10 9.10457 10.8954 10 12 10C13.1046 10 14 10.8954 14 12C14 13.1046 13.1046 14 12 14C10.8954 14 10 13.1046 10 12C10 10.8954 9.10457 10 8 10C6.89543 10 6 10.8954 6 12C6 13.1046 6.89543 14 8 14C8 16.2091 9.79086 18 12 18C14.2091 18 16 16.2091 16 14C16 12.8954 16.8954 12 18 12C19.1046 12 20 12.8954 20 14C20 16.2091 18.2091 18 16 18C14.8954 18 14 17.1046 14 16C14 14.8954 13.1046 14 12 14V22Z"
-          fill="url(#fireGradient)"
-          className="drop-shadow-sm"
-        />
-        
-        {/* Fire gradient */}
         <defs>
-          <linearGradient id="fireGradient" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#FF6B35" />
-            <stop offset="0.3" stopColor="#F7931E" />
-            <stop offset="0.6" stopColor="#FFD23F" />
-            <stop offset="1" stopColor="#FF6B35" />
+          {/* Fire gradients */}
+          <linearGradient id="outerFlameGradient" x1="12" y1="7" x2="12" y2="20" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFD700" />
+            <stop offset="30%" stopColor="#FF8C00" />
+            <stop offset="70%" stopColor="#FF6347" />
+            <stop offset="100%" stopColor="#DC143C" />
           </linearGradient>
           
-          {/* Sparkle gradient */}
-          <radialGradient id="sparkleGradient" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#FFD700" />
-            <stop offset="100%" stopColor="#FFA500" />
+          <linearGradient id="innerFlameGradient" x1="12" y1="10" x2="12" y2="17" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFF700" />
+            <stop offset="50%" stopColor="#FFD700" />
+            <stop offset="100%" stopColor="#FF8C00" />
+          </linearGradient>
+          
+          <radialGradient id="glowGradient" cx="12" cy="14" r="8" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#FFD700" stopOpacity="0.3" />
+            <stop offset="70%" stopColor="#FF6347" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#FF6347" stopOpacity="0" />
           </radialGradient>
         </defs>
-      </FireIcon>
 
-      {/* Animated Sparkles */}
-      {animated && (
-        <>
-          <SparkleIcon
-            cx="6"
-            cy="8"
-            r="1"
-            fill="url(#sparkleGradient)"
-            variants={sparkleVariants}
-            initial="initial"
+        {/* Glow effect */}
+        {animated && (
+          <GlowCircle
+            cx="12"
+            cy="14"
+            r="8"
+            fill="url(#glowGradient)"
+            variants={glowVariants}
             animate="animate"
-            className="absolute"
           />
-          <SparkleIcon
-            cx="18"
-            cy="10"
-            r="0.8"
-            fill="url(#sparkleGradient)"
-            variants={sparkleVariants}
-            initial="initial"
-            animate="animate"
-            className="absolute"
-          />
-          <SparkleIcon
-            cx="8"
-            cy="16"
-            r="0.6"
-            fill="url(#sparkleGradient)"
-            variants={sparkleVariants}
-            initial="initial"
-            animate="animate"
-            className="absolute"
-          />
-          <SparkleIcon
-            cx="16"
-            cy="18"
-            r="0.7"
-            fill="url(#sparkleGradient)"
-            variants={sparkleVariants}
-            initial="initial"
-            animate="animate"
-            className="absolute"
-          />
-        </>
-      )}
+        )}
+
+        {/* Outer flame */}
+        <FirePath1
+          d="M12 20 C8 18, 7 15, 7 12 C7 10, 8.5 9, 10 9 C10 8, 11 7, 12 7 C13 7, 14 8, 14 9 C15.5 9, 17 10, 17 12 C17 15, 16 18, 12 20 Z"
+          fill="url(#outerFlameGradient)"
+          variants={animated ? flame1Variants : undefined}
+          animate={animated ? "animate" : undefined}
+          style={{ filter: 'drop-shadow(0 2px 4px rgba(255, 99, 71, 0.3))' }}
+        />
+
+        {/* Inner flame */}
+        <FirePath2
+          d="M12 17 C10 16, 9 14, 9 12.5 C9 11.5, 10 11, 11 11 C11 10.5, 11.5 10, 12 10 C12.5 10, 13 10.5, 13 11 C14 11, 15 11.5, 15 12.5 C15 14, 14 16, 12 17 Z"
+          fill="url(#innerFlameGradient)"
+          variants={animated ? flame2Variants : undefined}
+          animate={animated ? "animate" : undefined}
+        />
+
+        {/* Hot core */}
+        <circle
+          cx="12"
+          cy="13"
+          r="2"
+          fill="#FFFF99"
+          opacity="0.8"
+          style={{ filter: 'blur(1px)' }}
+        />
+      </svg>
     </div>
   );
 };
