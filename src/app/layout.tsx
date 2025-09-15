@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   description: 'Connect with strangers for anonymous text conversations in a beautifully designed, warm and cozy interface.',
   keywords: ['chat', 'anonymous', 'text', 'realtime', 'cozy'],
   authors: [{ name: 'CozyChat Team' }],
+  icons: {
+    icon: { url: '/favicon.svg', type: 'image/svg+xml' },
+    apple: { url: '/favicon.svg', type: 'image/svg+xml' },
+  },
 };
 
 export const viewport = {

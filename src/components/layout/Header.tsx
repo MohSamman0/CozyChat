@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Container } from './Container';
 import { Button } from '../ui/Button';
 import { ThemeToggle } from '../chat/ThemeToggle';
+import { CozyFireIcon } from '../ui/CozyFireIcon';
 
 export interface HeaderProps {
   showNav?: boolean;
@@ -37,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({ showNav = true }) => {
                 boxShadow: 'var(--cozy-shadow-sm)'
               }}
             >
-              <span className="text-white font-bold text-lg">C</span>
+              <CozyFireIcon size="sm" animated={true} className="text-white" />
             </div>
             <h1 
               className="font-display text-2xl font-bold"
