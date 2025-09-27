@@ -1,0 +1,688 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+ * Cozy Global Theme System & Design Tokens
+ * Warm, minimal design applied across the entire website
+ * Supports RTL and warm light/dark themes
+ */
+
+/* Global Design Tokens - Base Variables */
+:root {
+  /* Colors - Warm Light Theme */
+  --cozy-bg: #fefdfb;              /* Warm off-white background */
+  --cozy-surface: #ffffff;          /* Pure white for cards/bubbles */
+  --cozy-surface-2: #faf9f7;       /* Slightly warmer secondary surface */
+  --cozy-text: #2d2825;            /* Rich warm dark text */
+  --cozy-text-muted: #6b5b5a;      /* Muted warm text */
+  --cozy-accent: #e67e22;          /* Warm amber for CTAs */
+  --cozy-accent-hover: #d35400;    /* Darker amber for hover */
+  --cozy-accent-contrast: #ffffff; /* White text on accent */
+  --cozy-border: #f4f3f1;          /* Subtle warm border */
+  --cozy-border-hover: #e8e6e3;    /* Slightly visible border on hover */
+  
+  /* Semantic Colors */
+  --cozy-success: #27ae60;
+  --cozy-warning: #f39c12;
+  --cozy-error: #e74c3c;
+  --cozy-info: #3498db;
+  
+  /* Typography */
+  --cozy-fs-xs: 0.75rem;           /* 12px */
+  --cozy-fs-sm: 0.875rem;          /* 14px */
+  --cozy-fs-base: 1rem;            /* 16px */
+  --cozy-fs-lg: 1.125rem;          /* 18px */
+  --cozy-fs-xl: 1.25rem;           /* 20px */
+  --cozy-fs-2xl: 1.5rem;           /* 24px */
+  
+  /* Fluid typography for mobile-first */
+  --cozy-fs-body: clamp(0.875rem, 0.8rem + 0.4vw, 1rem);
+  --cozy-fs-label: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --cozy-fs-heading: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  
+  /* Spacing Scale */
+  --cozy-sp-1: 0.25rem;            /* 4px */
+  --cozy-sp-2: 0.5rem;             /* 8px */
+  --cozy-sp-3: 0.75rem;            /* 12px */
+  --cozy-sp-4: 1rem;               /* 16px */
+  --cozy-sp-5: 1.25rem;            /* 20px */
+  --cozy-sp-6: 1.5rem;             /* 24px */
+  --cozy-sp-8: 2rem;               /* 32px */
+  --cozy-sp-12: 3rem;              /* 48px */
+  --cozy-sp-16: 4rem;              /* 64px */
+  
+  /* Border Radius */
+  --cozy-r-sm: 8px;
+  --cozy-r-md: 12px;
+  --cozy-r-lg: 16px;
+  --cozy-r-xl: 20px;
+  --cozy-r-2xl: 24px;
+  --cozy-r-full: 9999px;
+  
+  /* Shadows - Soft and warm */
+  --cozy-shadow-sm: 0 1px 3px 0 rgba(45, 40, 37, 0.08), 0 1px 2px -1px rgba(45, 40, 37, 0.04);
+  --cozy-shadow-md: 0 4px 6px -1px rgba(45, 40, 37, 0.08), 0 2px 4px -2px rgba(45, 40, 37, 0.04);
+  --cozy-shadow-lg: 0 10px 15px -3px rgba(45, 40, 37, 0.08), 0 4px 6px -4px rgba(45, 40, 37, 0.04);
+  --cozy-shadow-xl: 0 20px 25px -5px rgba(45, 40, 37, 0.08), 0 8px 10px -6px rgba(45, 40, 37, 0.04);
+  
+  /* Animation Durations */
+  --cozy-duration-fast: 150ms;
+  --cozy-duration-normal: 200ms;
+  --cozy-duration-slow: 300ms;
+  
+  /* Easing Functions */
+  --cozy-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --cozy-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --cozy-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Warm Dark Theme */
+[data-theme="warm-dark"] {
+  --cozy-bg: #1a1815;              /* Very dark warm brown */
+  --cozy-surface: #2d2825;         /* Dark warm surface */
+  --cozy-surface-2: #25211e;       /* Darker secondary surface */
+  --cozy-text: #f4f3f1;            /* Warm off-white text */
+  --cozy-text-muted: #a69694;      /* Muted warm text */
+  --cozy-accent: #f39c12;          /* Warmer amber for dark theme */
+  --cozy-accent-hover: #e67e22;    /* Hover state */
+  --cozy-accent-contrast: #1a1815; /* Dark text on accent */
+  --cozy-border: #3d3530;          /* Warm dark border */
+  --cozy-border-hover: #4a3f3a;    /* Hover border */
+  
+  /* Semantic colors adjusted for dark theme */
+  --cozy-success: #2ecc71;
+  --cozy-warning: #f1c40f;
+  --cozy-error: #e74c3c;
+  --cozy-info: #3498db;
+  
+  /* Dark theme specific shadows */
+  --cozy-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --cozy-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --cozy-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --cozy-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Global Base Styles - Applied to entire website */
+html {
+  background-color: var(--cozy-bg);
+  color: var(--cozy-text);
+  transition: background-color var(--cozy-duration-normal) var(--cozy-ease-out),
+              color var(--cozy-duration-normal) var(--cozy-ease-out);
+}
+
+body {
+  background-color: var(--cozy-bg);
+  color: var(--cozy-text);
+  font-size: var(--cozy-fs-body);
+  line-height: 1.6;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-poppins), system-ui, sans-serif;
+  }
+}
+
+/* Chat Page Wrapper - Maintains compatibility */
+.cozy-chat-v2 {
+  /* Inherits global theme variables */
+  color: inherit;
+  background-color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* RTL Support - Global */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .cozy-message-own {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .cozy-message-stranger {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* RTL Support for general components */
+[dir="rtl"] .cozy-button {
+  direction: rtl;
+}
+
+[dir="rtl"] .cozy-input {
+  text-align: right;
+}
+
+/* Component Classes */
+
+/* Top Bar */
+.cozy-top-bar {
+  background: var(--cozy-surface);
+  border-bottom: 1px solid var(--cozy-border);
+  padding: var(--cozy-sp-3) var(--cozy-sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: all var(--cozy-duration-normal) var(--cozy-ease-out);
+}
+
+.cozy-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--cozy-sp-2);
+  font-weight: 600;
+  font-size: var(--cozy-fs-lg);
+  color: var(--cozy-text);
+}
+
+.cozy-status-title {
+  font-size: var(--cozy-fs-base);
+  font-weight: 500;
+  color: var(--cozy-text-muted);
+}
+
+.cozy-top-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--cozy-sp-2);
+}
+
+.cozy-icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--cozy-r-lg);
+  border: none;
+  background: transparent;
+  color: var(--cozy-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--cozy-duration-fast) var(--cozy-ease-out);
+  position: relative;
+}
+
+.cozy-icon-button:hover {
+  background: var(--cozy-border-hover);
+  color: var(--cozy-text);
+  transform: scale(1.05);
+}
+
+.cozy-icon-button:active {
+  transform: scale(0.95);
+}
+
+/* Main Transcript Area */
+.cozy-transcript-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: var(--cozy-sp-4);
+}
+
+.cozy-messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--cozy-sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cozy-sp-4);
+  scroll-behavior: smooth;
+}
+
+/* System Messages */
+.cozy-system-message {
+  display: flex;
+  justify-content: center;
+  margin: var(--cozy-sp-4) 0;
+}
+
+.cozy-system-pill {
+  background: var(--cozy-surface-2);
+  color: var(--cozy-text-muted);
+  padding: var(--cozy-sp-2) var(--cozy-sp-4);
+  border-radius: var(--cozy-r-full);
+  font-size: var(--cozy-fs-sm);
+  border: 1px solid var(--cozy-border);
+  display: flex;
+  align-items: center;
+  gap: var(--cozy-sp-2);
+  box-shadow: var(--cozy-shadow-sm);
+  transition: all var(--cozy-duration-fast) var(--cozy-ease-out);
+}
+
+.cozy-system-pill.connecting {
+  color: var(--cozy-warning);
+  border-color: var(--cozy-warning);
+  background: rgba(243, 156, 18, 0.1);
+}
+
+.cozy-system-pill.connected {
+  color: var(--cozy-success);
+  border-color: var(--cozy-success);
+  background: rgba(39, 174, 96, 0.1);
+}
+
+.cozy-system-pill.disconnected {
+  color: var(--cozy-error);
+  border-color: var(--cozy-error);
+  background: rgba(231, 76, 60, 0.1);
+}
+
+/* Message Bubbles */
+.cozy-message-wrapper {
+  display: flex;
+  margin-bottom: var(--cozy-sp-3);
+  animation: cozy-message-appear var(--cozy-duration-normal) var(--cozy-ease-out);
+}
+
+.cozy-message-wrapper.own {
+  justify-content: flex-end;
+}
+
+.cozy-message-wrapper.stranger {
+  justify-content: flex-start;
+}
+
+.cozy-message-bubble {
+  max-width: min(80%, 480px);
+  padding: var(--cozy-sp-3) var(--cozy-sp-4);
+  border-radius: var(--cozy-r-lg);
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  font-size: var(--cozy-fs-body);
+  line-height: 1.5;
+  box-shadow: var(--cozy-shadow-sm);
+  transition: all var(--cozy-duration-fast) var(--cozy-ease-out);
+}
+
+.cozy-message-bubble.own {
+  background: var(--cozy-accent);
+  color: var(--cozy-accent-contrast);
+  margin-left: auto;
+}
+
+.cozy-message-bubble.stranger {
+  background: var(--cozy-surface);
+  color: var(--cozy-text);
+  border: 1px solid var(--cozy-border);
+}
+
+.cozy-message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--cozy-shadow-md);
+}
+
+.cozy-message-timestamp {
+  font-size: var(--cozy-fs-xs);
+  margin-top: var(--cozy-sp-1);
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: var(--cozy-sp-1);
+}
+
+.cozy-message-status {
+  font-size: var(--cozy-fs-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--cozy-sp-1);
+  opacity: 0.8;
+}
+
+/* Typing Indicator */
+.cozy-typing-indicator {
+  display: flex;
+  justify-content: flex-start;
+  margin: var(--cozy-sp-2) 0;
+}
+
+.cozy-typing-bubble {
+  background: var(--cozy-surface);
+  border: 1px solid var(--cozy-border);
+  border-radius: var(--cozy-r-lg);
+  padding: var(--cozy-sp-3) var(--cozy-sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--cozy-sp-2);
+  box-shadow: var(--cozy-shadow-sm);
+  animation: cozy-typing-pulse 2s ease-in-out infinite;
+}
+
+.cozy-typing-dots {
+  display: flex;
+  gap: var(--cozy-sp-1);
+}
+
+.cozy-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cozy-accent);
+  animation: cozy-dot-bounce 1.4s ease-in-out infinite;
+}
+
+.cozy-typing-dot:nth-child(1) { animation-delay: 0s; }
+.cozy-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.cozy-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Input Dock */
+.cozy-input-dock {
+  padding: var(--cozy-sp-4);
+  background: var(--cozy-surface);
+  border-top: 1px solid var(--cozy-border);
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cozy-input-container {
+  display: flex;
+  gap: var(--cozy-sp-3);
+  align-items: flex-end;
+  max-width: 100%;
+}
+
+.cozy-input {
+  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
+  padding: var(--cozy-sp-3) var(--cozy-sp-4);
+  border: 2px solid var(--cozy-border);
+  border-radius: var(--cozy-r-lg);
+  background: var(--cozy-bg);
+  color: var(--cozy-text);
+  font-size: var(--cozy-fs-base);
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  transition: all var(--cozy-duration-fast) var(--cozy-ease-out);
+  font-family: inherit;
+}
+
+.cozy-input:focus {
+  border-color: var(--cozy-accent);
+  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1);
+  background: var(--cozy-surface);
+}
+
+.cozy-input::placeholder {
+  color: var(--cozy-text-muted);
+}
+
+.cozy-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--cozy-surface-2);
+}
+
+/* Buttons */
+.cozy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cozy-sp-2);
+  padding: var(--cozy-sp-3) var(--cozy-sp-4);
+  border: none;
+  border-radius: var(--cozy-r-lg);
+  font-size: var(--cozy-fs-base);
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition: all var(--cozy-duration-fast) var(--cozy-ease-out);
+  min-height: 44px;
+  white-space: nowrap;
+  position: relative;
+  text-decoration: none;
+}
+
+.cozy-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.cozy-button.primary {
+  background: var(--cozy-accent);
+  color: var(--cozy-accent-contrast);
+  box-shadow: var(--cozy-shadow-sm);
+}
+
+.cozy-button.primary:hover:not(:disabled) {
+  background: var(--cozy-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--cozy-shadow-md);
+}
+
+.cozy-button.primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--cozy-shadow-sm);
+}
+
+.cozy-button.secondary {
+  background: var(--cozy-surface);
+  color: var(--cozy-text);
+  border: 1px solid var(--cozy-border);
+}
+
+.cozy-button.secondary:hover:not(:disabled) {
+  background: var(--cozy-surface-2);
+  border-color: var(--cozy-border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--cozy-shadow-sm);
+}
+
+.cozy-button.ghost {
+  background: transparent;
+  color: var(--cozy-text-muted);
+  border: 1px solid transparent;
+}
+
+.cozy-button.ghost:hover:not(:disabled) {
+  background: var(--cozy-border-hover);
+  color: var(--cozy-text);
+}
+
+/* Chat Controls Bar */
+.cozy-controls-bar {
+  background: var(--cozy-surface);
+  border-top: 1px solid var(--cozy-border);
+  padding: var(--cozy-sp-3) var(--cozy-sp-4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--cozy-sp-3);
+  transition: all var(--cozy-duration-fast) var(--cozy-ease-out);
+}
+
+.cozy-controls-bar .cozy-button {
+  min-width: 120px;
+  font-size: var(--cozy-fs-sm);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .cozy-top-bar {
+    padding: var(--cozy-sp-2) var(--cozy-sp-3);
+    min-height: 56px;
+  }
+  
+  .cozy-transcript-area {
+    padding: var(--cozy-sp-2);
+  }
+  
+  .cozy-messages-container {
+    padding: var(--cozy-sp-3);
+    gap: var(--cozy-sp-3);
+  }
+  
+  .cozy-input-dock {
+    padding: var(--cozy-sp-3);
+    /* Safe area for iOS */
+    padding-bottom: max(var(--cozy-sp-3), env(safe-area-inset-bottom));
+  }
+  
+  .cozy-message-bubble {
+    max-width: 85%;
+    font-size: var(--cozy-fs-sm);
+  }
+  
+  .cozy-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .cozy-controls-bar {
+    padding: var(--cozy-sp-2) var(--cozy-sp-3);
+    gap: var(--cozy-sp-2);
+  }
+  
+  .cozy-controls-bar .cozy-button {
+    min-width: 100px;
+    padding: var(--cozy-sp-2) var(--cozy-sp-3);
+    font-size: var(--cozy-fs-sm);
+  }
+}
+
+/* Animations */
+@keyframes cozy-message-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes cozy-typing-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes cozy-dot-bounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Loading animation */
+@keyframes cozy-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cozy-loading {
+  animation: cozy-spin 1s linear infinite;
+}
+
+/* Global Focus management */
+:focus {
+  outline: 2px solid var(--cozy-accent);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --cozy-border: #999;
+    --cozy-border-hover: #666;
+  }
+  
+  [data-theme="warm-dark"] {
+    --cozy-border: #666;
+    --cozy-border-hover: #999;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .cozy-chat-v2 *,
+  .cozy-chat-v2 *::before,
+  .cozy-chat-v2 *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .cozy-button {
+    background-color: var(--cozy-accent);
+    color: var(--cozy-accent-contrast);
+    @apply font-medium py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    box-shadow: var(--cozy-shadow-md);
+  }
+  
+  .cozy-button:hover {
+    background-color: var(--cozy-accent-hover);
+    box-shadow: var(--cozy-shadow-lg);
+  }
+  
+  .cozy-button-secondary {
+    background-color: var(--cozy-surface-2);
+    color: var(--cozy-text);
+    @apply font-medium py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    border: 1px solid var(--cozy-border);
+    box-shadow: var(--cozy-shadow-sm);
+  }
+  
+  .cozy-button-secondary:hover {
+    background-color: var(--cozy-border-hover);
+  }
+  
+  .cozy-card {
+    background-color: var(--cozy-surface);
+    @apply rounded-3xl p-6;
+    border: 1px solid var(--cozy-border);
+    box-shadow: var(--cozy-shadow-md);
+  }
+  
+  .cozy-input {
+    @apply w-full px-4 py-3 rounded-2xl border-2 transition-all duration-200;
+    background-color: var(--cozy-surface);
+    border-color: var(--cozy-border);
+    color: var(--cozy-text);
+  }
+  
+  .cozy-input:focus {
+    border-color: var(--cozy-accent);
+    box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.1);
+    outline: none;
+  }
+  
+  .cozy-input::placeholder {
+    color: var(--cozy-text-muted);
+  }
+}
